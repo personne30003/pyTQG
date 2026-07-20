@@ -1,6 +1,7 @@
 """
-Routines liées au calcul de dérivées/intégrales par la méthode de Collocation (Chebyshev)
-La plupart de ces fonctions sont adaptées des codes Matlab du bouquin de L.Trefethen "spectral methods in Matlab
+Fonctions liées au calcul de dérivées/intégrales par la méthode de Collocation (Chebyshev)
+Ces fonctions sont adaptées des codes Matlab du bouquin de L.Trefethen "spectral methods in Matlab"
+Pour plus de détails théoriques, je renvoie à ce bouquin.
 """
 import numpy as np
 import scipy
@@ -72,34 +73,62 @@ def Cheb_FFT(v, a=-1., b=1.):#v  : vecteur 1D réel
 def Cheb_second_FFT(v, a = -1., b=1.):
     "calcul de la dérivée seconde. Tiré de Trefethen. Ne pas utiliser, c'est pas précis et ça prend pas en compte les points extérieurs (nécessitent des formules spéciales"
     N = v.size-1
-    #N=v.size
-    #print(N)
+
     k = np.arange(0, N+1)
-    #print(k)
-    #x =  ( (b-a)*np.cos( np.pi * k / N )+ a+b)/2.0
+
     x =  np.cos( np.pi * k / N )
     ii = np.arange(1, N)
-    #print(f"ii = {ii}")
+    
     v_pp = v.copy()
-    #print(ii)
-    #print(k)
     v_col = np.array(v)
     v_flip = np.flip(v_col[1:-1])
 
     V = np.concatenate((v_col, v_flip))
-    #print(V)
     U = scipy.fft.fft(V).real
-    #print(U.size)
+    
     ik_1 = 1.j*np.concatenate((k[:-1], [0], -np.flip(k[1:-1])))
-    #print(ik_1)
     W1 = scipy.fft.ifft(ik_1 * U).real
     ik_2 =  ik_1**2
-    #print(np.concatenate((k, -np.flip(k)[1:-1])))
     W2  = scipy.fft.ifft(ik_2 * U).real
     v_pp[ii] = W2[ii]/(1. - x[ii]**2) - x[ii] * W1[ii]/( (1.- x[ii]**2)**(3./2.) )
-    #print(v_pp)
+    
     return 4.*v_pp/(b-a)**2
 
+#################Opérateurs d'intégration. On utilise la méthode de Clenshaw-Curtis##############################################
+
+
+def Clenshaw_Curtis_weight(N, a= -1.0, b = 1.0):
+    N -=1
+    theta = np.pi*np.arange(0, N+1)/N
+    #print(f"theta = {theta}")
+    w = np.zeros(N+1)
+    
+    ii = np.arange(1, N)
+    v = np.ones(N-1)
+    
+    if ( N % 2 ) == 0 : 
+
+        w[0] = 1.0/ ( N**2 - 1.0 )
+        w[-1] = w[0]
+        for k in range(1, N//2):
+            v = v-2.0*np.cos(2.0*k*theta[ii])/( 4.0* ( k**2 ) -1 )
+        v = v - np.cos(N*theta[ii])/(N**2-1.0)
+    else:
+        w[0] = 1.0/N**2
+        w[-1] = w[0]
+        for k in np.arange(1, (N-1)/2):
+            v = v - 2.0*np.cos(2.0*k*theta[ii])/( 4.0 * ( k**2 ) - 1.0 )
+    w[ii] = ((b -a )/2.0) * 2.0*v/N
+    return w
+
+def Cheb_quad(y, a=-1.0, b = 1.0) :
+    "Intégre une fonction 1D calculée sur points de Gauss-Lobatto, sur intervalle [a, b]"
+    weights = Clenshaw_Curtis_weight(y.size, a = a, b = b)
+    #return np.sum(weights * y, axis = axis)
+    return np.dot(weights, y)
+
+
+################Fonctions appliquées sur des tableaux 2D, ne pas utiliser, préférer la classe Grid (à venir)#####################
 
 def Cheb_FFT_2D(V, order = 1, axis ='x', a=-1., b= 1.):
     "Calcule la dérivée par FFT suivant une dimension (axis =0/'x ou axis = 1/'y')"
