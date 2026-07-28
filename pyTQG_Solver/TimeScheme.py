@@ -1,11 +1,11 @@
 """
 Tiré de mon solveur (en construction) QG barotrope de l'UE Projet Pro.
 
-Attention, cette classe n'a pas encore été testée et validée.
+Schémas implémentés (tous explicites) : Euler, Leapfrog (avec filtre d'Asselin), RK4, Heun, RK2
 
-Schémas implémentés (tous explicites) : Euler, Leapfrog (avec filtre d'asselin), RK4, Heun, RK2
+Peut s'appliquer à tout type de variable (scalaire, array, DataArray ...)
 
-Fortement inspiré de Fluid2d (auteur, G.Roullet, LOPS). Oui, meme le nom est identique
+Fortement inspiré de Fluid2d (auteur : G.Roullet, LOPS). Oui, meme le nom est identique.
 """
 
 import numpy as np

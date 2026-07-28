@@ -1,14 +1,18 @@
 """
 Fonctions liées au calcul de dérivées/intégrales par la méthode de Collocation (Chebyshev)
-Ces fonctions sont adaptées des codes Matlab du bouquin de L.Trefethen "spectral methods in Matlab"
+Ces fonctions sont (pour la plupart) adaptées des codes Matlab du bouquin de L.Trefethen "spectral methods in Matlab"
 Pour plus de détails théoriques, je renvoie à ce bouquin.
+
+ChebDiff_FFT est adaptée de la bibliothèque MATLAB développée par Weidemann (https://appliedmaths.sun.ac.za/~weideman/research/differ.html). 
+Elle permet de calculer la dérivée n-ème de n'importe quelle fonction 1D par FFT
+Voir commentaires au dessus du code correspondant.
 """
 import numpy as np
 import scipy
 
 
 def Cheb_mat(N, a=-1., b=1.):#L : etendue du domaine
-    "Retourne une matrice de différenciation de taille NxN, sur un intervalle (a, b)"
+    "Retourne une matrice de différenciation sur une grille de taille NxN, sur un intervalle (a, b). Tiré de Trefethen (fonction cheb.m, chapitre 6)"
     if N == 0 : 
         raise ValueError("N must be not null")
     N-=1
@@ -30,7 +34,7 @@ def Cheb_mat(N, a=-1., b=1.):#L : etendue du domaine
     return 2.0*D/(b-a)
 
 def collocation_points(N, a = -1., b = 1.) :
-    "génère une grille 1D avec points de Gauss-Lobatto, sur un intervalle (a, b). Attention, les valeurs sont rangées en ordre décroissant :" 
+    "génère une grille 1D avec points de Gauss-Lobatto, sur un intervalle (a, b). Attention, les valeurs sont rangées en ordre décroissantes." 
     k = np.arange(0, N, 1)*np.pi/(N-1)
     x = np.cos(k)
     if a != -1.0 and b !=1.0 : 
@@ -40,7 +44,7 @@ def collocation_points(N, a = -1., b = 1.) :
 
 
 def Cheb_FFT(v, a=-1., b=1.):#v  : vecteur 1D réel
-    "Différentiation 1D par FFT. Tiré de Trefethen"
+    "Différentiation 1D par FFT, sur intervalle (a, b). Tiré de Trefethen (Programme chebfft.m, chapitre 8)"
     N = v.size -1
     if N==0 : 
         raise ValueError("N must be >1")
@@ -94,10 +98,76 @@ def Cheb_second_FFT(v, a = -1., b=1.):
     
     return 4.*v_pp/(b-a)**2
 
+###################Fonction de dérivation par FFT (tout ordre confondu)###############################################################################
+###################Adapté de la bibliothèque MATLAB développée par Weidemann https://appliedmaths.sun.ac.za/~weideman/research/differ.html###############
+###################A voir à l'usage, c'est plus précis que la méthode matricielle, mais moins rapide au final#########################################
+###################Code généré par IA (au bout d'1.5 jours, j'en avais marre), je lui ai demandé d'émuler les indices MATLAB. Donc pas optimisé#######
+###################La partie diffile étant ce qui se passe dans les boucles for...####################################################################
+def ChebDiff_FFT(f, M=1, a=-1., b=1.):
+    "Calcule la dérivée d'ordre M d'une fonction 1D sur un domaine (a, b)"
+    f = np.asarray(f, dtype=complex).flatten()
+    N = len(f)
+    
+    # En MATLAB: f=f(:); a0=fft([f; flipud(f(2:N-1))]);
+    # f(2:N-1) en MATLAB correspond aux indices 2 à N-1 inclus.
+    # En Python (index-0), cela correspond à f[1:N-1]
+    f_flip = f[1:N-1][::-1]
+    f_ext = np.concatenate([f, f_flip])
+    a0_fft = np.fft.fft(f_ext)
+    
+    # En MATLAB: a0=a0(1:N).*[0.5; ones(N-2,1); 0.5]/(N-1);
+    # On crée un tableau indexé de 1 à N pour coller au MATLAB
+    a0_matlab = np.zeros(N + 1, dtype='complex')
+    weights = np.ones(N)
+    weights[0] = 0.5
+    weights[-1] = 0.5
+    a0_matlab[1:N+1] = a0_fft[:N] * weights / (N - 1)
+    
+    # En MATLAB: a=[a0 zeros(N,M)];
+    # Taille MATLAB : N lignes, M+1 colonnes.
+    # On crée une matrice de taille (N+1) x (M+2) pour utiliser les indices 1..N et 1..M+1
+    a = np.zeros((N + 1, M + 2), dtype='c.0omplex')
+    a[1:N+1, 1] = a0_matlab[1:N+1]
+
+    # Boucle MATLAB exacte
+    for ell in range(1, M + 1):
+        # a(N-ell,ell+1)=2*(N-ell)*a(N-ell+1,ell);
+        a[N - ell, ell + 1] = 2.0 * (N - ell) * a[N - ell + 1, ell]
+        
+        # for k=N-ell-2:-1:1
+        for k in range(N - ell - 2, 0, -1):
+            # a(k+1,ell+1)=a(k+3,ell+1)+2*(k+1)*a(k+2,ell);
+            a[k + 1, ell + 1] = a[k + 3, ell + 1] + 2.0 * (k + 1.0) * a[k + 2, ell]
+            
+        # a(1,ell+1)=a(2,ell)+a(3,ell+1)/2;
+        a[1, ell + 1] = a[2, ell] + a[3, ell + 1] / 2.0
+
+    # back=[2*a(1,M+1); a(2:N-1,M+1); 2*a(N,M+1); flipud(a(2:N-1,M+1))];
+    # Construction du vecteur 'back' en suivant scrupuleusement les indices MATLAB
+    # a(2:N-1, M+1) signifie de la ligne 2 à N-1 incluse
+    part2 = a[2:N, M + 1]
+    part4 = part2[::-1] # flipud
+    
+    back = np.concatenate([
+        [2.0 * a[1, M + 1]],
+        part2,
+        [2.0 * a[N, M + 1]],
+        part4
+    ])
+    
+    # Dmf=0.5*fft(back); Dmf=Dmf(1:N);
+    Dmf = 0.5 * np.fft.fft(back)
+    Dmf = Dmf[:N]
+
+    coeff_domaine = (2.0/(b-a))**M
+    return coeff_domaine * (Dmf.real)
+
+
 #################Opérateurs d'intégration. On utilise la méthode de Clenshaw-Curtis##############################################
 
 
 def Clenshaw_Curtis_weight(N, a= -1.0, b = 1.0):
+    "Calcule les coefficients de Clenshaw Crutis. Adapté de Trefethen (Programme clencurt.m, chapitre 12)"
     N -=1
     theta = np.pi*np.arange(0, N+1)/N
     #print(f"theta = {theta}")
