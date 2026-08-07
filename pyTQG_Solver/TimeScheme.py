@@ -6,6 +6,8 @@ Schémas implémentés (tous explicites) : Euler, Leapfrog (avec filtre d'Asseli
 Peut s'appliquer à tout type de variable (scalaire, array, DataArray ...)
 
 Fortement inspiré de Fluid2d (auteur : G.Roullet, LOPS). Oui, meme le nom est identique.
+
+A faire : inclure les polynomes de stabilité ainsi que le calcul des coordonnées de leur contour dans le plan complexe (ça va vous comprenez ?)
 """
 
 import numpy as np

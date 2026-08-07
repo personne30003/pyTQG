@@ -1,7 +1,7 @@
 """
 Fonctions liées au calcul de dérivées/intégrales par la méthode de Collocation (Chebyshev)
 Ces fonctions sont (pour la plupart) adaptées des codes Matlab du bouquin de L.Trefethen "spectral methods in Matlab"
-Pour plus de détails théoriques, je renvoie à ce bouquin.
+Pour plus de détails théoriques, je renvoie à ce bouquin, à ceux de Boyd et Peyret (cf biblio de mon rapport)
 
 ChebDiff_FFT est adaptée de la bibliothèque MATLAB développée par Weidemann (https://appliedmaths.sun.ac.za/~weideman/research/differ.html). 
 Elle permet de calculer la dérivée n-ème de n'importe quelle fonction 1D par FFT
@@ -11,8 +11,11 @@ import numpy as np
 import scipy
 
 
-def Cheb_mat(N, a=-1., b=1.):#L : etendue du domaine
-    "Retourne une matrice de différenciation sur une grille de taille NxN, sur un intervalle (a, b). Tiré de Trefethen (fonction cheb.m, chapitre 6)"
+def Cheb_mat(N, a=-1., b=1., Dirichlet_BC = False, M=1):#L : etendue du domaine
+    """"
+    Retourne une matrice de différenciation d'ordre M sur une grille de taille NxN, sur un intervalle (a, b). Tiré de Trefethen (fonction cheb.m, chapitre 6)
+    Dirichlet_BC : si vrai, retourne une matrice adaptée aux CLs de Dirichlet.
+    """
     if N == 0 : 
         raise ValueError("N must be not null")
     N-=1
@@ -31,7 +34,18 @@ def Cheb_mat(N, a=-1., b=1.):#L : etendue du domaine
     D_1 = ci_s_cj /(dX+np.eye(N+1))
     #elements diagonaux
     D = D_1 - np.diag(np.sum(D_1, axis=1))
-    return 2.0*D/(b-a)
+    D = 2.0*D/(b-a)
+    if M > 1:
+        D = np.linalg.matrix_power(D, M)
+    if M <= 0:
+        raise ValueError(f"order M must be >= 1 (current value M = {M})")
+    #imposition de CLs de Dirichlet
+    if Dirichlet_BC:
+        D[0, 0] = 1.0
+        D[0, 1:] = 0.0
+        D[-1, -1] = 1.0
+        D[-1, 0:-1] = 0.0
+    return D
 
 def collocation_points(N, a = -1., b = 1.) :
     "génère une grille 1D avec points de Gauss-Lobatto, sur un intervalle (a, b). Attention, les valeurs sont rangées en ordre décroissantes." 
@@ -103,8 +117,8 @@ def Cheb_second_FFT(v, a = -1., b=1.):
 ###################A voir à l'usage, c'est plus précis que la méthode matricielle, mais moins rapide au final#########################################
 ###################Code généré par IA (au bout d'1.5 jours, j'en avais marre), je lui ai demandé d'émuler les indices MATLAB. Donc pas optimisé#######
 ###################La partie diffile étant ce qui se passe dans les boucles for...####################################################################
-def ChebDiff_FFT(f, M=1, a=-1., b=1.):
-    "Calcule la dérivée d'ordre M d'une fonction 1D sur un domaine (a, b)"
+def ChebDiff_FFT(f, M=1, inf_bound=-1., sup_bound=1.):
+    "Calcule la dérivée d'ordre M d'une fonction 1D sur un domaine (inf_bound, sup_bound)"
     f = np.asarray(f, dtype=complex).flatten()
     N = len(f)
     
@@ -126,7 +140,7 @@ def ChebDiff_FFT(f, M=1, a=-1., b=1.):
     # En MATLAB: a=[a0 zeros(N,M)];
     # Taille MATLAB : N lignes, M+1 colonnes.
     # On crée une matrice de taille (N+1) x (M+2) pour utiliser les indices 1..N et 1..M+1
-    a = np.zeros((N + 1, M + 2), dtype='c.0omplex')
+    a = np.zeros((N + 1, M + 2), dtype='complex')
     a[1:N+1, 1] = a0_matlab[1:N+1]
 
     # Boucle MATLAB exacte
@@ -159,10 +173,57 @@ def ChebDiff_FFT(f, M=1, a=-1., b=1.):
     Dmf = 0.5 * np.fft.fft(back)
     Dmf = Dmf[:N]
 
-    coeff_domaine = (2.0/(b-a))**M
+    coeff_domaine = (2.0/(sup_bound-inf_bound))**M
     return coeff_domaine * (Dmf.real)
 
+#################Calcul de la matrice de dérivée d'ordre 2 en tenant compte des CLs##############################################
+def Cheb2_BC(N, a=-1.0, b=1.0, BC_xm1 = 'Dirichlet', BC_xp1 = 'Dirichlet', get_D = False):
+    """
+    Matrice de dérivée du 2e ordre avec prise en compte des BCs de Dirichlet/Neumann
+    De la forme u(i)+d(u(i)), i = 0, N.
+    Valeurs possibles de BC_xm1 (CL en -1 ou en a) et BC_xp1 (CL en 1 ou en b) : 'Dirichlet', 'Neumann', 'Robin'. 
+    SANS GARANTIE POUR ROBIN !!!
+    """
+    D = Cheb_diff(N, a=a, b=b)
+    D2 = D@D
+    
+    if BC_xm1 == 'Dirichlet':
+        D2[0, 0] = 1.0
+        D2[0, 1:] = 0.0
+        D[0, 0] = 1.0
+        D[0, 1:] = 0.0
+    
+    elif BC_xm1 == 'Neumann':
+        D2[0, :] = D[0, :].copy()
+    
+    elif BC_xm1 == 'Robin':
+        D2[0, :] = D[0, :]
+        D2[0, 0] +=1.0
+        D[0, 0] = 1.0
+        D[0, 1:-1] = 0.0
+    else:
+        raise ValueError(f"BC_xm1 must be in ('Dirichlet', 'Neumann', 'Robin'), current value '{BC_xm1}'")
 
+    if BC_xp1 == 'Dirichlet':
+        D2[-1, -1] = 1.0
+        D2[-1, 0:-1] = 0.0
+        D[-1, -1] = 1.0
+        D[-1, 0:-1] = 0.0
+    
+    elif BC_xp1 == 'Neumann':
+        D2[-1, :] = D[-1, :].copy()
+    
+    elif BC_xp1 == 'Robin':
+        D2[-1, :] = D[-1, :].copy()
+        D2[-1, -1] +=1.0
+        D[-1, 0:-1] = 0.0
+        D[-1, -1] = 1.0
+    else:
+        raise ValueError(f"BC_xp1 must be in ('Dirichlet', 'Neumann', 'Robin'), current value '{BC_xp1}'")
+    if get_D:
+        return D, D2
+    return D2
+#################################################################################################################################
 #################Opérateurs d'intégration. On utilise la méthode de Clenshaw-Curtis##############################################
 
 
@@ -198,7 +259,7 @@ def Cheb_quad(y, a=-1.0, b = 1.0) :
     return np.dot(weights, y)
 
 
-################Fonctions appliquées sur des tableaux 2D, ne pas utiliser, préférer la classe Grid (à venir)#####################
+################Fonctions appliquées sur des tableaux 2D, ne pas utiliser, préférer la classe Grid (à venir). Fonctions bientot supprimées#####################
 
 def Cheb_FFT_2D(V, order = 1, axis ='x', a=-1., b= 1.):
     "Calcule la dérivée par FFT suivant une dimension (axis =0/'x ou axis = 1/'y')"
