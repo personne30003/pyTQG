@@ -1,6 +1,7 @@
 """
 Solveur de Helmholtz pour grille périodique selon x et avec CLs de Dirichlet selon y (les CLs de Neumann/Robin ne sont pas implémentées)
 Résout une équation de la forme (dx^2 + dy^2 - alpha^2)psi=RHS
+Validé du premier coup !!
 
 """
 import numpy as np
@@ -64,9 +65,9 @@ class HelmholtzChannel:
         #Affiche le volume de mémoire consommé (en MiB)
         size_liste_mat = lambda liste_mat : (sys.getsizeof(liste_mat)+sum(mat.nbytes for mat in liste_mat))/(1024**2)
         size_prefac = size_liste_mat(self.liste_piv)+size_liste_mat(self.liste_F_fac)
-        self.disp_func(f"Mémoire occupée par ces matrices : {size_prefac:.3e} MiB")
+        self.disp_func(f"Mémoire occupée par ces matrices : {size_prefac:.2f} MiB")
 
-    def Solve(self, rhs, BC_y_inf, BC_y_sup, real = True):
+    def Solve(self, rhs, CL_y_inf, CL_y_sup, real = True):
 
         #Vérifications usuelles
         
@@ -74,7 +75,7 @@ class HelmholtzChannel:
             RHS = rhs *np.ones((self.Nx, self.Ny))
         elif isinstance(rhs, np.ndarray): 
             if (rhs.shape[0] != self.Nx) or (rhs.shape[1] != self.Ny):
-                raise ValuError(f"rhs must have shape Nx*Ny (here rhs.shape = {rhs.shape})")
+                raise ValueError(f"rhs must have shape Nx*Ny (here rhs.shape = {rhs.shape})")
             RHS = rhs.copy()
         else:
             raise ValueError(f"rhs must be scalar or np.ndarray of size Nx x Ny")
@@ -109,7 +110,7 @@ class HelmholtzChannel:
             coeff_BC_sup = self.D2[1:-1, -0].copy()
             coeff_BC_inf = self.D2[1:-1, -1].copy()
             rhs_hat_BC = rhs_hat_i - coeff_BC_sup*BC_y_sup_hat[i] - coeff_BC_inf*BC_y_inf_hat[i]
-            psi_num_hat[i, 1:-1] = scipy.linalg.lu_solve((liste_F_fac[i], liste_piv[i]), rhs_hat_BC)
+            psi_num_hat[i, 1:-1] = scipy.linalg.lu_solve((self.liste_F_fac[i], self.liste_piv[i]), rhs_hat_BC)
             #on ajoute les BC
             psi_num_hat[i, 0] = BC_y_sup_hat[i]
             psi_num_hat[i, -1] = BC_y_inf_hat[i]
