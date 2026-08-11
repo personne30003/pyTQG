@@ -13,7 +13,8 @@ class Params():
         self.max_time=1000.0
         self.max_it=1000000
         self.max_speed = 50.0#arbitraire, à modifier. Un dépassement de cette valeur engendre l'arret du programme
-        
+        self.list_configs = ('basin', 'biperiodic', 'channel')
+        self.config = 'biperiodic'
         self.output_path=os.getcwd()
         self.date = datetime.datetime.now()
         date_frm = self.date.strftime("%Y:%m:%d-%H:%M:%S")

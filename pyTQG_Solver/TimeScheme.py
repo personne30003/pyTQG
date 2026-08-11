@@ -7,11 +7,13 @@ Peut s'appliquer à tout type de variable (scalaire, array, DataArray ...)
 
 Fortement inspiré de Fluid2d (auteur : G.Roullet, LOPS). Oui, meme le nom est identique.
 
-A faire : inclure les polynomes de stabilité ainsi que le calcul des coordonnées de leur contour dans le plan complexe (ça va vous comprenez ?)
+A faire : inclure les polynomes de stabilité; Pour les calculs de stabilité, on utilisera une classe à part
 """
 
 import numpy as np
 import Params
+import collections
+
 
 
 class TimeScheme:

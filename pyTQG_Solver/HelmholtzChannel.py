@@ -13,7 +13,7 @@ import time
 
 class HelmholtzChannel:
     def __init__(self, Nx, Ny, x_bounds = (-np.pi, np.pi), y_bounds = (-1.0, 1.0), alpha2 = 1.0, print_func = None,
-                 BC_y =('Dirichlet', 'Dirichlet')):
+                 BC_y =('Dirichlet', 'Dirichlet'), kx = None):
         self.Nx = Nx
         self.Ny = Ny
         #Vérifications
@@ -41,7 +41,10 @@ class HelmholtzChannel:
 
         self.disp_func("Solveur choisi : HelmholtzChannel")
 
-        self.kx = 2.0*np.pi*scipy.fft.fftfreq(self.Nx, d=(x_bounds[1] - x_bounds[0])/self.Nx)
+        if kx is None:
+            self.kx = 2.0*np.pi*scipy.fft.fftfreq(self.Nx, d=(x_bounds[1] - x_bounds[0])/self.Nx)
+        else : 
+            self.kx = kx
         self.D2 = Chebyshev.Cheb_mat(self.Ny, a = y_bounds[0], b=y_bounds[-1], Dirichlet_BC = False, M=2)
         self.alpha2 = alpha2
         #Pré-construction et factorisation des matrices

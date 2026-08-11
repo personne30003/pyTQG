@@ -4,7 +4,7 @@ Résout une équation de la forme (dx^2 + dy^2 - alpha^2)psi=RHS
 
 Les "**kwargs", ce sont des arguments nommés, pas utilisés ici. Ils sont juste là pour etre compatibles avec les autres solveurs
 
-Non validé pour le moment.
+Non validé pour le moment |=-(
 """
 
 
@@ -14,7 +14,7 @@ import scipy
 
 
 class HelmholtzBiperiodic:
-    def __init__(self, Nx, Ny, x_bounds = (-np.pi, np.pi), y_bounds = (-np.pi, np.pi), alpha2 = 1.0, print_func = None, **kwargs):
+    def __init__(self, Nx, Ny, x_bounds = (-np.pi, np.pi), y_bounds = (-np.pi, np.pi),kx = None, ky =None, alpha2 = 1.0, print_func = None, **kwargs):
         self.Nx = Nx
         self.Ny = Ny
 
@@ -28,16 +28,25 @@ class HelmholtzBiperiodic:
         if y_bounds[0] >= y_bounds[1]:
             raise ValueError("y_bounds's values must be sorted in ascending order")
 
-        x = np.linspace(x_bounds[0], x_bounds[1], self.Nx, endpoint=False)
-        y = np.linspace(y_bounds[0], y_bounds[1], self.Ny, endpoint=False)
-        kx = 2.0*np.pi*scipy.fft.fftfreq(self.Nx, d = ( (x[-1] - x[0])/self.Nx ) )
-        ky = 2.0*np.pi*scipy.fft.fftfreq(self.Ny, d = ( (y[-1] - y[0])/self.Ny ) )
 
-        print(f"x_sup =x[-1] = {x[-1]}, x_inf =x[0] = {x[0]}")
-        print(f"y_sup =y[-1] = {y[-1]}, y_inf =y[0] = {y[0]}")
-        print(f"kx = {kx}")
-        print(f"ky = {ky}")
-        self.KX2, self.KY2 = np.meshgrid(kx**2, ky**2, indexing = 'ij')
+        if kx is None:
+            Kx = 2.0*np.pi*scipy.fft.fftfreq(self.Nx, d = ( (x_bounds[1] - x_bounds[0])/self.Nx ) )
+            #print(f"kx = {Kx}")
+        else:
+            Kx = kx
+
+        if ky is None:
+            y = np.linspace(y_bounds[0], y_bounds[1], self.Ny, endpoint=False)
+            Ky = 2.0*np.pi*scipy.fft.fftfreq(self.Ny, d = ( (y_bounds[1] - y_bounds[0])/self.Ny ) )
+            #print(f"ky = {Ky}")
+        else:
+            Ky = ky
+        
+        #print(f"x_sup =x[-1] = {x[-1]}, x_inf =x[0] = {x[0]}")
+        #print(f"y_sup =y[-1] = {y[-1]}, y_inf =y[0] = {y[0]}")
+        #print(f"kx = {kx}")
+        #print(f"ky = {ky}")
+        self.KX2, self.KY2 = np.meshgrid(Kx**2, Ky**2, indexing = 'ij')
         self.alpha2 = alpha2
         if self.alpha2 == 0.0:
             self.alpha2 = 1.0e-16#Pour éviter division par zéro
