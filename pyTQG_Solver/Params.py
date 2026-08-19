@@ -1,5 +1,7 @@
 """
 Classe rassemblant les paramètres généraux de la simu. Gère aussi l'affichage de la sortie.
+TODO : arreter d'initialiser les paramètres dans la classe, et les mettre dans un fichier JSON ('default.JSON'), avec leur documentation.
+       Comme dans Fluid2d et pyRSW quoi.
 """
 import os
 import sys
@@ -19,51 +21,7 @@ class Params():
         self.date = datetime.datetime.now()
         date_frm = self.date.strftime("%Y:%m:%d-%H:%M:%S")
         self.exp_name = f'Exp_{date_frm}'
-        self.use_logger = use_logger
-        
-        if use_logger :
-            self.logger = self.__create_logger()
-        else :
-            self.logger = None
 
-    def print(self, msg, type_msg ='INFO'):
-        "Fonction d'affichage générique"
-        if self.logger is None : 
-            print(msg)
-        else : 
-            if type_msg == 'INFO':
-                self.logger.info(msg)
-            elif type_msg == 'WARNING':
-                self.logger.warning(msg)
-            elif type_msg == 'ERROR':
-                self.logger.error(msg)
-            else : 
-                raise ValueError(f"type_msg = {type_msg} must be in ['INFO', 'WARNING', 'ERROR']")
-        
-    def __create_logger(self):
-        "Créé un fichier log"
-        logger = logging.getLogger(self.exp_name)
-        logger.setLevel(logging.INFO)
-        logger.setLevel(logging.WARNING)
-        logger.setLevel(logging.ERROR)
-        if logger.handlers:
-            return logger
-
-        formatter = logging.Formatter("%(asctime) %(levelname)s : %(message)s")
-        
-        #Sorties à la fois sur la console ET dans un fichier
-        console = logging.StreamHandler()
-        console.setFormatter(formatter)
-        
-        logfile = logging.FileHandler(
-            f"{self.case_name}.log", mode="w"
-        )
-        logfile.setFormatter(formatter)
-
-        logger.addHandler(console)
-        logger.addHandler(logfile)
-
-        return logger
 
     def __str__(self):
         pass

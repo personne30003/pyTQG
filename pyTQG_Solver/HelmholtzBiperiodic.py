@@ -4,7 +4,7 @@ Résout une équation de la forme (dx^2 + dy^2 - alpha^2)psi=RHS
 
 Les "**kwargs", ce sont des arguments nommés, pas utilisés ici. Ils sont juste là pour etre compatibles avec les autres solveurs
 
-Non validé pour le moment |=-(
+Validé !
 """
 
 
@@ -14,7 +14,7 @@ import scipy
 
 
 class HelmholtzBiperiodic:
-    def __init__(self, Nx, Ny, x_bounds = (-np.pi, np.pi), y_bounds = (-np.pi, np.pi),kx = None, ky =None, alpha2 = 1.0, print_func = None, **kwargs):
+    def __init__(self, Nx, Ny, x_bounds = (-np.pi, np.pi), y_bounds = (-np.pi, np.pi),kx = None, ky =None, alpha2 = 1.0, **kwargs):
         self.Nx = Nx
         self.Ny = Ny
 

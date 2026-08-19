@@ -12,8 +12,14 @@ import sys
 import time
 
 class HelmholtzChannel:
-    def __init__(self, Nx, Ny, x_bounds = (-np.pi, np.pi), y_bounds = (-1.0, 1.0), alpha2 = 1.0, print_func = None,
-                 BC_y =('Dirichlet', 'Dirichlet'), kx = None):
+    def __init__(self,
+                 Nx,
+                 Ny,
+                 x_bounds = (-np.pi, np.pi),
+                 y_bounds = (-1.0, 1.0),
+                 alpha2 = 1.0,
+                 BC_y =('Dirichlet', 'Dirichlet'),
+                 kx = None):
         self.Nx = Nx
         self.Ny = Ny
         #Vérifications
@@ -35,11 +41,9 @@ class HelmholtzChannel:
         if (BC_y[0] != 'Dirichlet') or (BC_y[1] != 'Dirichlet'):
             raise NotImplementedError("Only Dirichlet BC are implemented ...")
         #Au cas où on devrait afficher sur la sortie standard et dans un fichier LOG
-        self.disp_func = print
-        if print_func is not None:
-            self.disp_func = disp_func
 
-        self.disp_func("Solveur choisi : HelmholtzChannel")
+
+        print("Solveur choisi : HelmholtzChannel")
 
         if kx is None:
             self.kx = 2.0*np.pi*scipy.fft.fftfreq(self.Nx, d=(x_bounds[1] - x_bounds[0])/self.Nx)
@@ -64,11 +68,11 @@ class HelmholtzChannel:
             self.liste_piv[i] = piv_i
             self.liste_F_fac[i] = lu_i
         t1 = time.time()
-        self.disp_func(f"Fait en {(t1-t0):.3f} s")
+        print(f"Fait en {(t1-t0):.3f} s")
         #Affiche le volume de mémoire consommé (en MiB)
         size_liste_mat = lambda liste_mat : (sys.getsizeof(liste_mat)+sum(mat.nbytes for mat in liste_mat))/(1024**2)
         size_prefac = size_liste_mat(self.liste_piv)+size_liste_mat(self.liste_F_fac)
-        self.disp_func(f"Mémoire occupée par ces matrices : {size_prefac:.2f} MiB")
+        print(f"Mémoire occupée par ces matrices : {size_prefac:.2f} MiB")
 
     def Solve(self, rhs, CL_y_inf, CL_y_sup, real = True):
 
@@ -105,7 +109,7 @@ class HelmholtzChannel:
         BC_y_inf_hat = scipy.fft.fft(BC_y_inf)
         BC_y_sup_hat = scipy.fft.fft(BC_y_sup)
 
-        self.disp_func("Appel HelmholtzChannel")
+        print("Appel HelmholtzChannel")
         t0 = time.time()
 
         for i in range(0, self.Nx):
@@ -119,7 +123,7 @@ class HelmholtzChannel:
             psi_num_hat[i, -1] = BC_y_inf_hat[i]
 
         psi_num = scipy.fft.ifft(psi_num_hat, axis = 0)
-        self.disp_func(f"Fait en {time.time()-t0:.3f} s")
+        print(f"Fait en {time.time()-t0:.3f} s")
         
         if real:
             return psi_num.real

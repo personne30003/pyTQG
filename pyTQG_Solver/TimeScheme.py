@@ -3,16 +3,14 @@ Tiré de mon solveur (en construction) QG barotrope de l'UE Projet Pro.
 
 Schémas implémentés (tous explicites) : Euler, Leapfrog (avec filtre d'Asselin), RK4, Heun, RK2
 
-Peut s'appliquer à tout type de variable (scalaire, array, DataArray ...)
+Peut s'appliquer à tout type de variable munie des opérateurs d'addition et de multiplication par un scalaire (scalaire, array, DataArray ...)
 
 Fortement inspiré de Fluid2d (auteur : G.Roullet, LOPS). Oui, meme le nom est identique.
 
-A faire : inclure les polynomes de stabilité; Pour les calculs de stabilité, on utilisera une classe à part
 """
 
 import numpy as np
 import Params
-import collections
 
 
 

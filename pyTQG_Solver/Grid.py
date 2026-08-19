@@ -7,6 +7,7 @@ Classe regroupant les opérateurs de dérivation et intégration
 import Params
 import Fourier
 import Chebyshev
+import Dealiasing
 import numpy as np
 import scipy
 
