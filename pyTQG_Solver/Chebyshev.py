@@ -9,7 +9,8 @@ Voir commentaires au dessus du code correspondant.
 """
 import numpy as np
 import scipy
-
+import numpy.polynomial.chebyshev as npcheb
+import numba
 
 def Cheb_mat(N, a=-1., b=1., Dirichlet_BC = False, M=1):#L : etendue du domaine
     """"
@@ -224,40 +225,55 @@ def Cheb2_BC(N, a=-1.0, b=1.0, BC_xm1 = 'Dirichlet', BC_xp1 = 'Dirichlet', get_D
         return D, D2
     return D2
 #################################################################################################################################
-#################Opérateurs d'intégration. On utilise la méthode de Clenshaw-Curtis##############################################
+#############################################Opérateurs d'intégration.###########################################################
 
-
-def Clenshaw_Curtis_weight(N, a= -1.0, b = 1.0):
-    "Calcule les coefficients de Clenshaw Crutis. Adapté de Trefethen (Programme clencurt.m, chapitre 12)"
-    N -=1
+@numba.jit#Petite optimisation par précompilation : on gagne un petit facteur 2 en temps dans Cheb_quad
+def Clenshaw_Curtis_weight(N):
+    """Calcule les poids de CLenshaw-Curtis, pour une fonction définie sur N points (et interpolée par un polynome de degré N-1)
+       Adapté du programme MATLAB clencurt.m (Trefethen, chapitre 12)
+    """
+    N -=1#définit le degré des polynomes
+    
     theta = np.pi*np.arange(0, N+1)/N
-    #print(f"theta = {theta}")
     w = np.zeros(N+1)
-    
     ii = np.arange(1, N)
+
     v = np.ones(N-1)
-    
+
     if ( N % 2 ) == 0 : 
 
         w[0] = 1.0/ ( N**2 - 1.0 )
         w[-1] = w[0]
-        for k in range(1, N//2):
+
+        for k in np.arange(1, N/2):
             v = v-2.0*np.cos(2.0*k*theta[ii])/( 4.0* ( k**2 ) -1 )
+
         v = v - np.cos(N*theta[ii])/(N**2-1.0)
+
     else:
+
         w[0] = 1.0/N**2
         w[-1] = w[0]
-        for k in np.arange(1, (N-1)/2):
+        for k in np.arange(1, (N-1)/2+1):
             v = v - 2.0*np.cos(2.0*k*theta[ii])/( 4.0 * ( k**2 ) - 1.0 )
-    w[ii] = ((b -a )/2.0) * 2.0*v/N
+
+    w[ii] = 2.0*v/N
     return w
 
 def Cheb_quad(y, a=-1.0, b = 1.0) :
     "Intégre une fonction 1D calculée sur points de Gauss-Lobatto, sur intervalle [a, b]"
-    weights = Clenshaw_Curtis_weight(y.size, a = a, b = b)
+    weights = ((b -a )/2.0)*Clenshaw_Curtis_weight(y.size)
     #return np.sum(weights * y, axis = axis)
     return np.dot(weights, y)
 
+
+def Cheb_cumsum(y, x) :
+    """Idem que Chebquad, mais pour une intégrale calculée sur l'intervalle [a, x] (où x>= a est croissant).
+       On travaille ici directement sur les coefficients. C'est lent, mais c'est précis, et de toute façon, c'est pas utilisé pour les diagnostics"""
+    coeffs = npcheb.chebfit(x, y, len(y)-1)
+    coeffs_int = npcheb.chebint(coeffs)
+    y_int = npcheb.chebval(x, coeffs_int)
+    return y_int-y_int[-1]
 
 ################Fonctions appliquées sur des tableaux 2D, ne pas utiliser, préférer la classe Grid (à venir). Fonctions bientot supprimées#####################
 

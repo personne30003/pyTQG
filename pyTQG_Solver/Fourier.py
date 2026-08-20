@@ -26,3 +26,10 @@ def Fourier_deriv(y, a = 0., b = 2.0*np.pi, real = True, order = 1, k=None):
 def Fourier_quad(y, dx):
     "Intégration d'une fonction périodique 1D par méthode des trapèzes ;  dx : pas spatial"
     return np.sum(y)*dx
+
+def Fourier_cumsum(y, dx):
+    """"Intégration d'une fonction périodique 1D, le long d'un domaine ; dx: pas spatial
+        Attention : précision faible (10^-7 pour N=128). Utilisé uniquement pour reconstituer psi à partir de u et v
+    """
+    I = scipy.integrate.cumulative_simpson(y, dx=dx, initial=0.0)
+    return I
