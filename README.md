@@ -19,6 +19,16 @@ Et 2 couches couplées **Vic et al 2024**, **a corriger** :
 \end{align}
 ```
 
+En complément, nous implémentons aussi le modèle QG barotrope (cela sert de test): 
+```math
+\begin{align}
+\partial_t q + \mathrm{J}(\psi, q) = 0\\
+(\partial_x^2+\partial_y^2)\psi + \beta y = 0
+\end{align}
+```
+
+
+
 Trois configurations sont envisagées :
 - Bipériodique
 - Canal zonal (périodique selon x, fermé selon y)
@@ -28,5 +38,8 @@ Le code est en construction. Le prototypage se fait dans le répertoire `/Proto_
 
 
 Le calcul des dérivées se fait soit dans la base de Fourier (si périodicité), avec les matrices de différenciation de Chebyshev (méthode de collocation). 
-Les schémas d'intégration temporels (Euler, Heun, LeapFrog avec filtre d'Asselin, RK3, RK4) sont tous explicites, ce qui peut poser des problèmes de stabilité 
-lorsqu'on utilise des matrices de différenciation de Chebyshev. A ce stade, aucun dé-aliasing n'est envisagé, de meme que l'utilisation de dissipation numérique... 
+Les schémas d'intégration temporels (Euler, Heun, LeapFrog avec filtre d'Asselin, RK2, RK4) sont tous explicites. 
+
+Pour le déaliasing, j'utilise la règle des 2/3 pour Fourier, un filtre exponentiel pour Chebyshev.
+
+Le diagramme de classe est disponible dans `pyTQG.pdf`. ** L'architecture du code est fortement inspirée de Fluid2d et pyRSW **
