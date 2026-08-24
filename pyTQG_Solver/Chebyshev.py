@@ -52,7 +52,7 @@ def collocation_points(N, a = -1., b = 1.) :
     "génère une grille 1D avec points de Gauss-Lobatto, sur un intervalle (a, b). Attention, les valeurs sont rangées en ordre décroissantes." 
     k = np.arange(0, N, 1)*np.pi/(N-1)
     x = np.cos(k)
-    if a != -1.0 and b !=1.0 : 
+    if a != -1.0 or b !=1.0 : 
         return ( (b-a)*x+ a+b)/2.0
     else :
         return x

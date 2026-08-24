@@ -6,7 +6,21 @@ Quelque fonctions liées au déaliasing :
 Ces fonctions ne s'appliquent que sur des vecteurs 1D (comme toutes les fonctions bas-niveau)
 """
 import numpy as np
+import dataclasses
 
+liste_modes_dealias = ('after_product', 'after_derivative')
+#petite classe rassemblant les paramètres de déaliasing
+@dataclasses.dataclass
+class DealiasParams:
+    apply_dealias : bool = False
+    dealias_order : str = 'after_product'#valeurs possibles "after_product", "after_derivative"
+    dealias_Fourier_coeff : float = 2.0/3.0
+    dealias_exp_alpha : float = 100.0
+    dealias_exp_p : float = 8.0
+
+    def __post_init__(self):
+        if self.dealias_order not in liste_modes_dealias:
+            raise ValueError(f"dealias_order must be str, with value in {liste_modes_dealias}, current value : {liste_mod_dealias}")
 
 def Fourier_dealias(v, dx, coeff_dealias=2.0/3.0, real = True):
     kx = 2.0*np.pi*scipy.fft.fftfreq(v.size, d=dx)
