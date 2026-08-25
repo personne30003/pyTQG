@@ -6,6 +6,7 @@ Quelque fonctions liées au déaliasing :
 Ces fonctions ne s'appliquent que sur des vecteurs 1D (comme toutes les fonctions bas-niveau)
 """
 import numpy as np
+import scipy
 import dataclasses
 
 liste_modes_dealias = ('after_product', 'after_derivative')

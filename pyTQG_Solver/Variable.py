@@ -1,6 +1,5 @@
 """
-Classe permettant de documenter les variables : nom, type (prognostique, diagnostique), CLs, attributs (sert pour la doc). Sert surtout pour Grid afin de déterminer quels opérateurs sont nécessaires
-
+Classe permettant de documenter les variables : nom, type (prognostique, diagnostique), attributs (sert pour la doc). Sert surtout pour State et la classe dédiée aux sorties (je sais pas comment l'appeler)
 """
 
 import dataclasses
@@ -11,7 +10,6 @@ class Variable:
     name : str
     type : str#'diagnostic', 'prognostic'
     units : str=''
-    BCs : bool = False
     integrated : bool = False
     attrs : str = ''
 

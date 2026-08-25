@@ -1,5 +1,5 @@
 """
-Classe rassemblant les paramètres généraux de la simu. Gère aussi l'affichage de la sortie.
+Classe rassemblant les paramètres généraux de la simu.
 TODO : arreter d'initialiser les paramètres dans la classe, et les mettre dans un fichier JSON ('default.JSON'), avec leur documentation.
        Comme dans Fluid2d et pyRSW quoi.
 """
@@ -7,7 +7,8 @@ import os
 import sys
 import datetime
 import Dealiasing
-import copy()
+import copy
+import numpy as np
 
 class Params():
     def __init__(self, use_logger = False):
