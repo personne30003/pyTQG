@@ -23,7 +23,7 @@ def Fourier_deriv(y, a = 0., b = 2.0*np.pi, real = True, order = 1, k=None):
     coeff_interval = (2.0*np.pi/(b-a))**order
     return coeff_interval*y_p
 
-def Fourier_quad(y, dx):
+def Fourier_quad(y, dx, axis =0):
     "Intégration d'une fonction périodique 1D par méthode des trapèzes ;  dx : pas spatial"
     return np.sum(y)*dx
 
