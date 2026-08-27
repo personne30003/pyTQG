@@ -56,7 +56,7 @@ class HelmholtzChannel:
         self.liste_F_fac = [0 for i in range(0, self.Nx)]
 
         alpha_Id = self.alpha2*np.eye(self.Ny - 2)
-        self.disp_func("Calcul des matrices de différenciation et préfactorisation LU")
+        print("Calcul des matrices de différenciation et préfactorisation LU")
         t0=time.time()
         
         for i in range(0, self.Nx):
@@ -109,7 +109,7 @@ class HelmholtzChannel:
         BC_y_inf_hat = scipy.fft.fft(BC_y_inf)
         BC_y_sup_hat = scipy.fft.fft(BC_y_sup)
 
-        print("Appel HelmholtzChannel")
+        #print("Appel HelmholtzChannel")
         t0 = time.time()
 
         for i in range(0, self.Nx):
@@ -123,7 +123,7 @@ class HelmholtzChannel:
             psi_num_hat[i, -1] = BC_y_inf_hat[i]
 
         psi_num = scipy.fft.ifft(psi_num_hat, axis = 0)
-        print(f"Fait en {time.time()-t0:.3f} s")
+        #print(f"Fait en {time.time()-t0:.3f} s")
         
         if real:
             return psi_num.real

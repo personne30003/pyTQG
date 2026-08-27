@@ -114,12 +114,14 @@ def Cheb_second_FFT(v, a = -1., b=1.):
     return 4.*v_pp/(b-a)**2
 
 ###################Fonction de dérivation par FFT (tout ordre confondu)###############################################################################
-###################Adapté de la bibliothèque MATLAB développée par Weidemann https://appliedmaths.sun.ac.za/~weideman/research/differ.html###############
-###################A voir à l'usage, c'est plus précis que la méthode matricielle, mais moins rapide au final#########################################
-###################Code généré par IA (au bout d'1.5 jours, j'en avais marre), je lui ai demandé d'émuler les indices MATLAB. Donc pas optimisé#######
-###################La partie diffile étant ce qui se passe dans les boucles for...####################################################################
 def ChebDiff_FFT(f, M=1, inf_bound=-1., sup_bound=1.):
-    "Calcule la dérivée d'ordre M d'une fonction 1D sur un domaine (inf_bound, sup_bound)"
+    """
+    Calcule la dérivée d'ordre M d'une fonction 1D sur un domaine (inf_bound, sup_bound)
+    Adapté de la bibliothèque MATLAB développée par Weidemann https://appliedmaths.sun.ac.za/~weideman/research/differ.html
+    A voir à l'usage, c'est un peu plus précis que la méthode matricielle, mais moins rapide au final
+    Code généré par IA (au bout d'1.5 jours, j'en avais marre), je lui ai demandé d'émuler les indices MATLAB. Donc pas optimisé !
+    La partie diffile étant ce qui se passe dans les boucles for...
+    """
     f = np.asarray(f, dtype=complex).flatten()
     N = len(f)
     
@@ -228,9 +230,10 @@ def Cheb2_BC(N, a=-1.0, b=1.0, BC_xm1 = 'Dirichlet', BC_xp1 = 'Dirichlet', get_D
 #############################################Opérateurs d'intégration.###########################################################
 
 @numba.jit#Petite optimisation par précompilation : on gagne un petit facteur 2 en temps dans Cheb_quad
-def Clenshaw_Curtis_weight(N):
-    """Calcule les poids de CLenshaw-Curtis, pour une fonction définie sur N points (et interpolée par un polynome de degré N-1)
-       Adapté du programme MATLAB clencurt.m (Trefethen, chapitre 12)
+def Clenshaw_Curtis_weight(N, a=-1.0, b=-1.0):
+    """Calcule les poids de CLenshaw-Curtis, pour une fonction définie sur N points, sur un intervalle (a, b),
+       et interpolée par un polynome de degré N-1
+       Adapté du programme MATLAB clencurt.m (Trefethen, chapitre 12).
     """
     N -=1#définit le degré des polynomes
     
@@ -258,63 +261,36 @@ def Clenshaw_Curtis_weight(N):
             v = v - 2.0*np.cos(2.0*k*theta[ii])/( 4.0 * ( k**2 ) - 1.0 )
 
     w[ii] = 2.0*v/N
+    
+    if (a !=-1.0) or (b !=1.0) : 
+        w = ((b -a )/2.0)*w
     return w
 
-def Cheb_quad(y, a=-1.0, b = 1.0) :
-    "Intégre une fonction 1D calculée sur points de Gauss-Lobatto, sur intervalle [a, b]"
-    weights = ((b -a )/2.0)*Clenshaw_Curtis_weight(y.size)
-    #return np.sum(weights * y, axis = axis)
-    return np.dot(weights, y)
+def Cheb_quad(y, a=-1.0, b = 1.0, weights = None, axis = None) :
+    """Intégre une fonction 1D calculée sur points de Gauss-Lobatto, sur intervalle [a, b], sur l'axe ('x', 'y', None).
+    Pour un simple tableau 1D, laisser axis = None"""
+    if weights is None : 
+        weights = Clenshaw_Curtis_weight(y.size, a = a, b = b)
+    if axis == 'x':
+        axis = 1
+    elif axis == 'y':
+        axis = 0
+        if weights.shape != (y.shape[1], 1):
+            weights = weights[..., None]#on transforme k en vecteur colonne
+    elif axis is None:
+        pass
+    else:
+        raise ValueError(f"axis must be in ('x', 'y', None), current value : axis = {axis}")
+        
+    return np.sum(weights*y, axis = axis)
 
 
 def Cheb_cumsum(y, x) :
-    """Idem que Chebquad, mais pour une intégrale calculée sur l'intervalle [a, x] (où x>= a est croissant).
-       On travaille ici directement sur les coefficients. C'est lent, mais c'est précis, et de toute façon, c'est pas utilisé pour les diagnostics"""
+    """
+    Idem que Chebquad, mais pour une intégrale calculée sur l'intervalle [a, x] (où x>= a est croissant).
+    On travaille ici directement sur les coefficients. C'est lent, mais c'est précis, et de toute façon, c'est pas utilisé pour les diagnostics
+    """
     coeffs = npcheb.chebfit(x, y, len(y)-1)
     coeffs_int = npcheb.chebint(coeffs)
     y_int = npcheb.chebval(x, coeffs_int)
     return y_int-y_int[-1]
-
-################Fonctions appliquées sur des tableaux 2D, ne pas utiliser, préférer la classe Grid (à venir). Fonctions bientot supprimées#####################
-
-def Cheb_FFT_2D(V, order = 1, axis ='x', a=-1., b= 1.):
-    "Calcule la dérivée par FFT suivant une dimension (axis =0/'x ou axis = 1/'y')"
-    if order ==1 : 
-        func_deriv = lambda xx : Cheb_FFT(xx, a=a, b=b)
-    elif order == 2 : 
-        #func_deriv = lambda xx : Cheb_second_FFT(xx, a=a, b=a)
-        func_deriv = lambda xx : Cheb_FFT(Cheb_FFT(xx, a=a, b=b), a=a, b=b)
-    else :
-        raise ValueError
-    
-    if axis == 'x' or axis == 0 : 
-        dVdx = np.zeros_like(V)
-        for i in range(0, V.shape[0]):
-            dVdx[i, :] = func_deriv(V[i, :])
-        return dVdx
-    elif axis == 'y' or axis == 1:
-        dVdy = np.zeros_like(V)
-        for i in range(0, V.shape[1]):
-            dVdy[:, i] = func_deriv(V[:,i])
-        return dVdy
-    else:
-        raise ValueError
-def Cheb_derivative_2D(V, order = 1, axis ='x', a = -1., b=1.):
-    "idem que la prédédente mais avec la matrice. Préférable pour la dérivée seconde"
-    if axis == 'x' or axis == 0 : 
-        dVdx = np.zeros_like(V)
-        Nx = dVdx.shape[0]
-        D = Cheb_mat(Nx, a=a, b=b)
-        #D = D[1:-1, 1:-1]
-        if order == 2 : 
-            D = D@D
-        for i in range(0, V.shape[1]):
-            dVdx[i, :] = D@V[i, :]
-        return dVdx
-    elif axis == 'y' or axis == 1:
-        dVdy = np.zeros_like(V)
-        for i in range(0, V.shape[0]):
-            dVdy[i, :] = D@V[:, i]
-        return dVdy
-    else:
-        raise ValueError

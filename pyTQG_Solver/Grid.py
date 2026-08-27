@@ -61,6 +61,9 @@ class Grid:
         self.__Dy_BC = None
         self.__D2y = None
         self.__D2y_BC = None
+        ############################coefficients de poids pour les fonctions d'intégrations#######################################################
+        self.__int_weight_x = None
+        self.__int_weight_y = None
         ####On génère la grille, et on attribue les fonctions#######################
         if self.__geometry == 'biperiodic':
             self.x = np.linspace(self.__x_bounds[0], self.__x_bounds[1], self.__Nx, endpoint = False)
@@ -69,23 +72,31 @@ class Grid:
             self.__dy = self.y[1] - self.y[0]
 
             #fonctions 1D
-            self.__dealias_x_1D = lambda xx : Dealiasing.Fourier_dealias(xx, self.__dx, self.__dealias_params.dealias_Fourier_coeff)
-            self.__dealias_y_1D = lambda yy : Dealiasing.Fourier_dealias(yy, self.__dy, self.__dealias_params.dealias_Fourier_coeff)
+            self.__dealias_x = lambda xx : Dealiasing.Fourier_dealias(xx,
+                                                                         self.__dx,
+                                                                         coeff_dealias = self.__dealias_params.dealias_Fourier_coeff,
+                                                                         axis = 'x')
+            self.__dealias_y = lambda yy : Dealiasing.Fourier_dealias(yy,
+                                                                         self.__dy,
+                                                                         coeff_dealias = self.__dealias_params.dealias_Fourier_coeff,
+                                                                         axis = 'y')
 
-            self.__int_x_1D = lambda xx : Fourier.Fourier_quad(xx, self.__dx)
-            self.__int_y_1D = lambda yy : Fourier.Fourier_quad(yy, self.__dy)
+            self.__int_weight_x = self.__dx
+            self.__int_weight_y = self.__dy
+            self.__int_x_1D = lambda xx : Fourier.Fourier_quad(xx, self.__int_weight_x, axis = 'x')
+            self.__int_y_1D = lambda yy : Fourier.Fourier_quad(yy, self.__int_weight_y, axis = 'y')
 
             self.__int_cum_x_1D = lambda xx : Fourier.Fourier_cumsum(xx, self.__dx)
             self.__int_cum_y_1D = lambda yy : Fourier.Fourier_cumsum(yy, self.__dy)
             
-            self.__dx_1D = lambda xx : Fourier.Fourier_deriv(xx, order = 1, a = self.__x_bounds[0], b = self.__x_bounds[1])
-            self.__dy_1D = lambda yy : Fourier.Fourier_deriv(yy, order = 1, a = self.__y_bounds[0], b = self.__y_bounds[1])
+            self.__dx_1D = lambda xx : Fourier.Fourier_deriv(xx, order = 1, a = self.__x_bounds[0], b = self.__x_bounds[1], axis = 'x')
+            self.__dy_1D = lambda yy : Fourier.Fourier_deriv(yy, order = 1, a = self.__y_bounds[0], b = self.__y_bounds[1], axis = 'y')
 
             self.__dy_1D_BC = self.__dy_1D
             self.__dx_1D_BC = self.__dx_1D
 
-            self.__d2x_1D = lambda xx : Fourier.Fourier_deriv(xx, order = 2, a = self.__x_bounds[0], b = self.__x_bounds[1])
-            self.__d2y_1D = lambda yy : Fourier.Fourier_deriv(yy, order = 2, a = self.__y_bounds[0], b = self.__y_bounds[1])
+            self.__d2x_1D = lambda xx : Fourier.Fourier_deriv(xx, order = 2, a = self.__x_bounds[0], b = self.__x_bounds[1], axis = 'x')
+            self.__d2y_1D = lambda yy : Fourier.Fourier_deriv(yy, order = 2, a = self.__y_bounds[0], b = self.__y_bounds[1], axis = 'y')
 
             self.__d2y_1D_BC = self.__d2y_1D
             self.__d2x_1D_BC = self.__d2x_1D
@@ -96,34 +107,44 @@ class Grid:
             self.__dx = self.x[1] - self.x[0]
             self.__dy = np.abs(self.y[1]-self.y[0])#les points sont les plus rapprochés aux bords
 
-            self.__Dy = Chebyshev.Cheb_mat(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1])
-            self.__D2y = Chebyshev.Cheb_mat(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1], M=2)
 
-            self.__Dy_BC = Chebyshev.Cheb_mat(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1], Dirichlet_BC = True)
-            self.__D2y_BC = Chebyshev.Cheb_mat(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1], Dirichlet_BC = True, M = 2)
+            self.__int_weight_x = self.__dx
+            self.__int_weight_y = Chebyshev.Clenshaw_Curtis_weight(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1])
 
-            self.__dx_1D = lambda xx : Fourier.Fourier_deriv(xx, order = 1, a = self.__x_bounds[0], b = self.__x_bounds[1])
-            self.__dy_1D = lambda yy : self.__Dy@yy
+            self.__Dy = Chebyshev.Cheb_mat(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1]).T
+            self.__D2y = Chebyshev.Cheb_mat(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1], M=2).T
 
-            self.__d2x_1D = lambda xx : Fourier.Fourier_deriv(xx, order = 2, a = self.__x_bounds[0], b = self.__x_bounds[1])
-            self.__d2y_1D = lambda yy : self.__D2y@yy
+            self.__Dy_BC = Chebyshev.Cheb_mat(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1], Dirichlet_BC = True).T
+            self.__D2y_BC = Chebyshev.Cheb_mat(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1], Dirichlet_BC = True, M = 2).T
+
+            self.__dx_1D = lambda xx : Fourier.Fourier_deriv(xx, order = 1, a = self.__x_bounds[0], b = self.__x_bounds[1], axis = 'x')
+            self.__dy_1D = lambda yy : yy @ self.__Dy
+
+            self.__d2x_1D = lambda xx : Fourier.Fourier_deriv(xx, order = 2, a = self.__x_bounds[0], b = self.__x_bounds[1], axis = 'x')
+            self.__d2y_1D = lambda yy : yy @ self.__D2y
 
             self.__dx_1D_BC = self.__dx_1D
-            self.__dy_1D_BC = lambda yy : self.__Dy_BC@yy
+            self.__dy_1D_BC = lambda yy : yy @ self.__Dy_BC
 
             self.__d2x_1D_BC = self.__d2x_1D
-            self.__d2y_1D_BC = lambda yy : self.__D2y_BC@yy
+            self.__d2y_1D_BC = lambda yy : yy @ self.__D2y_BC
 
-            self.__dealias_x_1D = lambda xx : Dealiasing.Fourier_dealias(xx, self.__dx, self.__dealias_params.dealias_Fourier_coeff)
-            self.__dealias_y_1D = lambda yy : Dealiasing.exp_filter_DCT(yy,
-                                                                        alpha = self.__dealias_params.dealias_exp_alpha,
-                                                                        p = self.__dealias_params.dealias_exp_p)
+            self.__dealias_x = lambda xx : Dealiasing.Fourier_dealias(xx,
+                                                                         self.__dx,
+                                                                         coeff_dealias = self.__dealias_params.dealias_Fourier_coeff,
+                                                                         axis = 'x')
             
-            self.__int_x_1D = lambda xx : Fourier.Fourier_quad(xx, self.__dx)
-            self.__int_y_1D = lambda yy : Chebyshev.Cheb_quad(yy, a = self.__y_bounds[0], b = self.__y_bounds[1])
+            self.__dealias_y = lambda yy : Dealiasing.exp_filter_DCT(yy,
+                                                                        alpha = self.__dealias_params.dealias_exp_alpha,
+                                                                        p = self.__dealias_params.dealias_exp_p,
+                                                                        axis = 'y')
+            
+            self.__int_x = lambda xx : Fourier.Fourier_quad(xx, self.__int_weight_x, axis = 'x')
+            self.__int_y = lambda yy : Chebyshev.Cheb_quad(yy, weights = self.__int_weight_y, axis = 'y')
 
             self.__int_cum_x_1D = lambda xx : Fourier.Fourier_cumsum(xx, self.__dx)
             self.__int_cum_y_1D = lambda yy : Chebyshev.Cheb_cumsum(yy, self.x)
+            
         elif self.__geometry == 'basin':
             raise NotImplementedError("configuration basin not (yet) implemented")
         else:
@@ -139,24 +160,18 @@ class Grid:
         #Fonctions d'intégration
         self.__int_cum_x = self.__apply_along_axis(self.__int_cum_x_1D, "x")
         self.__int_cum_y = self.__apply_along_axis(self.__int_cum_y_1D, "y")
-        #fonctions de déaliasing
-        self.__dealias_x = self.__apply_along_axis(self.__dealias_x_1D, "x")
-        self.__dealias_y = self.__apply_along_axis(self.__dealias_y_1D, "y")
-        #fonctions de dérivation
-        dx = self.__apply_along_axis(self.__dx_1D, "x")
-        dy = self.__apply_along_axis(self.__dy_1D, "y")
-        dx_BC = self.__apply_along_axis(self.__dx_1D_BC, "x")
-        dy_BC = self.__apply_along_axis(self.__dy_1D_BC, "y")
-        #idem pour les dérivées secondes
-        d2x = self.__apply_along_axis(self.__d2x_1D, "x")
-        d2y = self.__apply_along_axis(self.__d2y_1D, "y")
-        d2x_BC = self.__apply_along_axis(self.__d2x_1D_BC, "x")
-        d2y_BC = self.__apply_along_axis(self.__d2y_1D_BC, "y")
-        #####TODO : optimiser les fonctions appliquant un produit matriciel, en utilisant numba##############
+
         #####On met ça dans l'ordre#################################
         Deriv_axis = collections.namedtuple('Deriv_axis', ['di', 'di_BC', 'd2i', 'd2i_BC'])
-        self.__liste_deriv_x = Deriv_axis(di = dx, di_BC = dx_BC, d2i = d2x, d2i_BC = d2x_BC)
-        self.__liste_deriv_y = Deriv_axis(di = dy, di_BC = dy_BC, d2i = d2y, d2i_BC = d2y_BC)
+        self.__liste_deriv_x = Deriv_axis(di = self.__dx_1D,
+                                          di_BC = self.__dx_1D_BC,
+                                          d2i = self.__d2x_1D,
+                                          d2i_BC = self.__d2x_1D_BC)
+        
+        self.__liste_deriv_y = Deriv_axis(di = self.__dy_1D,
+                                          di_BC = self.__dy_1D_BC,
+                                          d2i = self.__d2y_1D,
+                                          d2i_BC = self.__d2y_1D_BC)
     
     ##############Fonctions pour l'utilisateur##########################
     def derivative(self, val, axis, order =1, BC_Dirichlet = False):
@@ -185,28 +200,32 @@ class Grid:
         return func_deriv(val)
 
     def integrate(self, val, axis):
-        "Intègre une fonction sur seul axe ('x', 'y'). Renvoie un array de meme taille que val. Je suis franchement pas sur"
+        """"
+        Intègre une fonction sur seul axe ('x', 'y', 'all'). 
+        Renvoie :
+        -un array de taille Ny si axis = 'x',
+        -un array de taille Nx si axis = 'y'
+        -un scalaire si axis = 'all' """
         self.__check_shape(val)
         if axis == 'x':
-            return self.__int_cum_x(val)
+            return np.sum(self.__int_weight_x*val, axis = 0)
         elif axis == 'y':
-            return self.__int_cum_y(val)
+            return np.sum(self.__int_weight_y*val, axis = 1)
+        elif axis == 'all':
+            return self.integrate_all_domain(val)
         else:
             raise ValueError("axis must be in ('x', 'y')")
-        
+
     def integrate_all_domain(self, val):
-        "intègre une fonction sur toute la grille. Renvoie un scalaire"
+        "Intègre sur tout le domaine. Renvoie un scalaire. Peut etre appelé directement depuis integrate"
         self.__check_shape(val)
-        I_x = np.zeros(self.__Ny)
-        
-        for i in range(0, self.__Ny):
-            I_x[i] = self.__int_x_1D(val[:, i])
-            
-        I = self.__int_y_1D(I_x)
+        I_x = np.sum(self.__int_weight_x*val, axis = 0)
+        I = np.sum(self.__int_weight_y*I_x)
         return I
         
     def dealias(self, value, axis):
         "Dé-aliase_selon une ou plusieurs directions (utile si le modèle inclut des produits de termes)"
+        self.__check_shape(value)
         if axis == "x" : 
             return self.__dealias_x(value)
         elif axis == "y" : 
@@ -215,6 +234,14 @@ class Grid:
             return self.__dealias_y(self.__dealias_x(value))
         else :
             raise ValueError(f"axis must be in ('x', 'y', 'all'), current value : {axis}")
+
+    def dealias_product(self, A, B, axis_A, axis_B):
+        """
+        Applique un déaliasing sur le produit A*B
+        Deux possibilités : soit déaliasing 'before_product', soit 'after_product'
+        A voir si je le mets. Pour le moment, pas d'utilité immédiate
+        """
+        raise NotImplementedError("dealias_product not (yet ?) implemented :-(")
 
     def jacobien(self,val_A, val_B, BC_A = False, BC_B = True):
         "Calcule J(A, B) = dx(A)*dy(B) - dy(A)*dx(B), en appliquant un déaliasing si nécessaire"
@@ -231,7 +258,7 @@ class Grid:
         dx_B = getattr(self.__liste_deriv_x, key_BC_B)(val_B)
         dy_B = getattr(self.__liste_deriv_y, key_BC_B)(val_B)
         
-        if self.__dealias_params.dealias_order == 'before_product':
+        if self.__dealias_params.dealias_order == 'before_product' and self.__dealias_params.apply_dealias:
             dx_A = self.dealias(dx_A, "x")
             dx_B = self.dealias(dx_B, "x")
             dy_A = self.dealias(dy_A, "y")
@@ -239,16 +266,27 @@ class Grid:
 
         dxA_dyB = dx_A*dy_B
         dyA_dxB = dy_A*dx_B
-        if self.__dealias_params.dealias_order == 'after_product':
-            dx_A_dy_B = self.dealias(dx_A_dy_B, "all")
+        if self.__dealias_params.dealias_order == 'after_product' and self.__dealias_params.apply_dealias:
+            dxA_dy_B = self.dealias(dxA_dyB, "all")
             dyA_dxB = self.dealias(dyA_dxB, "all")
         return dxA_dyB - dyA_dxB
 
+    def int_cum(self, val, axis):
+        "Calcule l'intégrale cumulée selon un axe ('x', 'y'). Renvoie un array de taille (Nx, Ny). Lent et peu utile ...."
+        self.__check_shape(val)
+        if axis == 'x':
+            return self.__int_cum_x(val)
+        elif axis == 'y':
+            return self.__int_cum_y(val)
+        else:
+            raise ValueError(f"axis must be in ('x', 'y'), current value = {axis}")
+
+    
     def __repr__(self):
         str_out = f"""
         Grid : \n
         Geometry = {self.__geometry}\n
-        -Size ({self.__Nx}, {self.__Ny})\n
+        -Size {self.X.shape} \n
         -Step : dx = {self.__dx}, dy = {self.__dy}\n
         -Intervals : x = {self.__x_bounds}, y = {self.__y_bounds} \n
         -DealiasParams : {self.__dealias_params}
