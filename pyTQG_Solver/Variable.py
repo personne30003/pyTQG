@@ -13,7 +13,7 @@ class Variable:
                  type_var = 'prognostic',
                  name = '',
                  units = '',
-                 integrated = True,
+                 field = True,
                  attrs = '') : 
         self.value = value
         if type_var not in ('prognostic', 'diagnostic'):
@@ -23,7 +23,7 @@ class Variable:
         self.__name = name
         self.__units = units
         self.__attrs = attrs
-        self.__integrated = integrated
+        self.__field = field
     
     def __eq__(self, other):
         if not isinstance(other, Variable) : 
@@ -32,7 +32,7 @@ class Variable:
         msk = ((self.__name == other.name) and
                (self.__type == other.type) and
                (self.__units == other.units) and
-               (self.__integrated == other.integrated) and
+               (self.__field == other.field) and
                (self.__attrs == other.attrs))
         
         return msk
@@ -43,7 +43,7 @@ class Variable:
         - name = {self.__name}
         - type = {self.__type}
         - units = {self.__units}
-        - integrated = {self.__integrated}
+        - field = {self.__field}
         - attrs = {self.__attrs}
         mutable attributes
         - value = {self.value}"""
@@ -61,8 +61,8 @@ class Variable:
         return self.__units
 
     @property
-    def integrated(self):
-        return self.__integrated
+    def field(self):
+        return self.__field
 
     @property
     def attrs(self):
