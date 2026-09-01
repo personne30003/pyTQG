@@ -72,6 +72,12 @@ class State:
 
     def __rmul__(self, scalar) : 
         return self.__mul__(scalar)
+
+    def __truediv__(self, scalar):
+        return self.__mul__(1./scalar)
+
+    def __sub__(self, other):
+        return self.__add__(-1.*other)#Attention, ne fonctionne que pour des flottants
         
     def __getitem__(self, var):
         

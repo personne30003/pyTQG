@@ -9,9 +9,11 @@ import datetime
 import Dealiasing
 import copy
 import numpy as np
+import dataclasses
+
 
 class Params():
-    def __init__(self, use_logger = False):
+    def __init__(self):
         
         self.Nx=100
         self.Ny=100
@@ -23,17 +25,36 @@ class Params():
         self.dealias_params = Dealiasing.DealiasParams()
         
         self.time_scheme='Euler'
-        self.max_time=1000.0
+        self.max_time=10.0
         self.max_it=1000000
         self.max_speed = 50.0#arbitraire, à modifier. Un dépassement de cette valeur engendre l'arret du programme
         
         self.output_path=os.getcwd()
-        self.date = datetime.datetime.now()
-        date_frm = self.date.strftime("%Y:%m:%d-%H:%M:%S")
+        date = datetime.datetime.now()
+        date_frm = date.strftime("%Y:%m:%d-%H:%M:%S")
+        self.date = date_frm
+        
         self.exp_name = f'Exp_{date_frm}'
+        self.exp_dir = os.path.dirname(os.getcwd())#On se place dans le dossier parent. C'est à dire le dossier juste avant le répertoire du module
 
     def copy(self):
         return copy.deepcopy(self)
 
-    def __str__(self):
+    def __repr__(self):
         pass
+
+    def to_NETCDF_attrs(self):
+        NC_attrs = {}
+        dic_dealias = dataclasses.asdict(self.dealias_params)
+        dic_dealias['apply_dealias'] = str(dic_dealias['apply_dealias'])
+        for attr, val in self.__dict__.items():
+            if val is None:
+                NC_attrs[attr] = 'None'
+            if attr == 'dealias_params':
+                continue
+            else:
+                NC_attrs[attr] = val
+        NC_attrs = {**NC_attrs, **dic_dealias}
+        #print(NC_attrs)
+        return NC_attrs
+        

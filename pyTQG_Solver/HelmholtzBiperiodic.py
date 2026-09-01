@@ -47,12 +47,14 @@ class HelmholtzBiperiodic:
         #print(f"kx = {kx}")
         #print(f"ky = {ky}")
         self.KX2, self.KY2 = np.meshgrid(Kx**2, Ky**2, indexing = 'ij')
-        self.alpha2 = alpha2
         if self.alpha2 == 0.0:
             self.alpha2 = 1.0e-16#Pour éviter division par zéro
 
-    def Solve(self, rhs, real = True, **kwargs):
+    def Solve(self, rhs, alpha2, real = True, **kwargs):
         #Verifications (suppose que RHS est de type np.ndarray)
+        if alpha2 == 0.0:
+            alpha2 = 1.0e-16#Pour éviter division par zéro
+            
         if np.isscalar(rhs) : 
             RHS = rhs *np.ones((self.Nx, self.Ny))
         elif isinstance(rhs, np.ndarray): 
@@ -63,7 +65,7 @@ class HelmholtzBiperiodic:
             raise ValueError(f"rhs must be scalar or np.ndarray of size Nx x Ny")
 
         RHS_hat = scipy.fft.fft2(RHS, axes = (0, 1))
-        Psi_hat = -RHS_hat/( self.KX2 + self.KY2 + self.alpha2 )
+        Psi_hat = -RHS_hat/( self.KX2 + self.KY2 + alpha2 )
         Psi = scipy.fft.ifft2(Psi_hat, axes = (0, 1))
 
         if real : 

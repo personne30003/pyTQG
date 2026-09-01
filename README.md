@@ -23,7 +23,7 @@ En complément, nous implémentons aussi le modèle QG barotrope (cela sert de t
 ```math
 \begin{align}
 \partial_t q + \mathrm{J}(\psi, q) = 0\\
-(\partial_x^2+\partial_y^2)\psi + \beta y = 0
+(\partial_x^2+\partial_y^2)\psi -\frac{\psi}{R_d^2} + \beta y = 0
 \end{align}
 ```
 
