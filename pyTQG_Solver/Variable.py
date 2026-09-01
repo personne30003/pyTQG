@@ -5,6 +5,7 @@ Globalement valide.
 """
 
 #import numpy as np
+import copy
 
 class Variable:
 
@@ -38,7 +39,8 @@ class Variable:
         return msk
 
     def __repr__(self):
-        return f"""Variable : 
+        return f"""
+        Variable : 
         Immutables attributes : 
         - name = {self.__name}
         - type = {self.__type}
@@ -47,6 +49,9 @@ class Variable:
         - attrs = {self.__attrs}
         mutable attributes
         - value = {self.value}"""
+
+    def copy(self):
+        return copy.deepcopy(self)
     ##Accès aux attributs immutables (sauf valeur)
     @property
     def name(self):

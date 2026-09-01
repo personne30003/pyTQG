@@ -3,7 +3,7 @@ Tiré de mon solveur (en construction) QG barotrope de l'UE Projet Pro.
 
 Schémas implémentés (tous explicites) : Euler, Leapfrog (avec filtre d'Asselin), RK4, Heun, RK2
 
-Peut s'appliquer à tout type de variable munie des opérateurs d'addition et de multiplication par un scalaire (scalaire, array, DataArray ...)
+Peut s'appliquer à tout objet muni des opérateurs d'addition, multiplication/division par un scalaire (scalaire, array, DataArray ...) et copie (obj.copy())
 
 Fortement inspiré de Fluid2d (auteur : G.Roullet, LOPS). Oui, meme le nom est identique.
 
@@ -31,7 +31,7 @@ class TimeScheme:
             
         self.scheme_type=params.time_scheme
         self.operator_scheme=self.__SchemeList[self.scheme_type]
-        self.u=np.copy(u0)
+        self.u=u0.copy()
         #print(f"initialisation u={self.u}")
         self.rhs=rhs#Attention il s'agit d'une fonction
         self.t=0.0
@@ -39,8 +39,8 @@ class TimeScheme:
         #paramètres pour schéma LeapFrog
         self.LeapFrog_init_scheme='Euler'
         self.LeapFrog_Asselin_coeff=0.05
-        self.LeapFrog_u_old = np.copy(u0)
-        self.LeapFrog_u_f = np.zeros_like(u0)
+        self.LeapFrog_u_old = u0.copy()
+        self.LeapFrog_u_f = u0.copy()
         self.LeapFrog_dt_old = None
         self.first_it = True
         
@@ -56,13 +56,11 @@ class TimeScheme:
         #return self.u
         
     def LeapFrog(self, dt,*args):
-        u_n=np.copy(self.u)
         if self.first_it:
             #print("first it")
             self.__SchemeList[self.LeapFrog_init_scheme](dt,*args)#u_1
             #self.RK2(dt, *args)
             self.first_it = False
-            self.LeapFrog_u_f
         else :
             #Pas valide si pas de temps non uniforme (c'est le cas dans mon solveur)
             u_new=self.LeapFrog_u_old + 2.0*dt*self.rhs(self.u, self.t - self.LeapFrog_dt_old, *args)#u_n+1

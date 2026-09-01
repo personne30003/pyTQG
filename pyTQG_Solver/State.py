@@ -31,7 +31,7 @@ class State:
         for var in args : 
             if type(var) != Variable.Variable :
                 raise ValueError(f"*args must be Variable.Variable, not {type(var)}")
-            self.__dic_var[var.name] = var
+            self.__dic_var[var.name] = var.copy()
 
             #On vérifie si la variable est déjà dans la liste
             if var.name in self.__liste_vars:
@@ -49,10 +49,11 @@ class State:
 
     def __add__(self, other):
         if not isinstance(other, State):
-            raise ValueError(f"sum only compatible with State.State, not {type(other)}")
+            raise TypeError(f"sum only compatible with State, not {type(other)}")
 
         self.__check_other(other)
         new_S = self.copy()
+        
         for var in self.__liste_prognostic : 
             new_S[var].value = new_S[var].value+other[var].value
         return new_S
@@ -75,13 +76,13 @@ class State:
     def __getitem__(self, var):
         
         if var not in self.__dic_var.keys() : 
-            raise ValueError(f"key {var} must be in {dic_var.keys()}")
-            
-        return copy.deepcopy(self.__dic_var[var])
+            raise KeyError(f"key {var} must be in {self.__dic_var.keys()}")
+        return self.__dic_var[var]
+        #return copy.deepcopy(self.__dic_var[var])
 
     def __setitem__(self, var, value):
         if var not in self.__dic_var.keys() : 
-            raise ValueError(f"key {var} must be in {dic_var.keys()}")
+            raise KeyError(f"key {var} must be in {self.__dic_var.keys()}")
             
         if var in self.__liste_scalars and not np.isscalar(value):
             raise ValueError(f"cannot assign {type(value)} to scalar")
@@ -95,7 +96,8 @@ class State:
         return copy.deepcopy(self)
 
     def __repr__(self):
-        return f""" State : 
+        return f""" 
+        State : 
         - data_vars = {self.__liste_vars}
         - prognostics_vars = {self.__liste_prognostic}
         - diagnostics_vars = {self.__liste_diagnostic}
