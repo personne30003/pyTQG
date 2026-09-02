@@ -50,11 +50,11 @@ class HelmholtzChannel:
         self.D2 = Chebyshev.Cheb_mat(self.Ny, a = y_bounds[0], b=y_bounds[-1], Dirichlet_BC = False, M=2)
         self.__dic_alpha2 = {}
 
-    def Solve(self, rhs, alpha2, CL_y_inf=0.0, CL_y_sup=0.0, real = True):
+    def Solve(self, rhs, alpha2, bc_y_inf=0.0, bc_y_sup=0.0, real = True):
         "Doc ..."
         #Vérifications usuelles
         if np.isscalar(rhs) : 
-            RHS = rhs *np.ones((self.Nx, self.Ny))
+            RHS = rhs * np.ones((self.Nx, self.Ny))
         elif isinstance(rhs, np.ndarray): 
             if (rhs.shape[0] != self.Nx) or (rhs.shape[1] != self.Ny):
                 raise ValueError(f"rhs must have shape Nx*Ny (here rhs.shape = {rhs.shape})")
@@ -62,21 +62,21 @@ class HelmholtzChannel:
         else:
             raise ValueError(f"rhs must be scalar or np.ndarray of size Nx x Ny")
 
-        if np.isscalar(CL_y_inf) : 
-            BC_y_inf = np.ones(self.Nx) * CL_y_inf
-        elif (( isinstance(CL_y_inf, np.ndarray) == True ) and
-              ( CL_y_inf.shape[0] == self.Nx and len(CL_y_inf.shape) == 1 )):
-            BC_y_inf = CL_y_inf.copy()
+        if np.isscalar(bc_y_inf) :
+            BC_y_inf = np.ones(self.Nx) * bc_y_inf
+        elif (( isinstance(bc_y_inf, np.ndarray) == True ) and
+              ( bc_y_inf.shape[0] == self.Nx and len(bc_y_inf.shape) == 1 )):
+            BC_y_inf = bc_y_inf.copy()
         else : 
-            raise ValueError(f"CL_y_inf must be scalar or 1D array of size Nx (CL_y_inf = {CL_y_inf}")
+            raise ValueError(f"bc_y_inf must be scalar or 1D array of size Nx (bc_y_inf = {bc_y_inf}")
         
-        if np.isscalar(CL_y_sup) : 
-            BC_y_sup = np.ones(self.Nx) * CL_y_sup
-        elif (( isinstance(CL_y_sup, np.ndarray) == True ) and
-              ( CL_y_sup.shape[0] == self.Nx and len(CL_y_sup.shape) == 1 )):
-            BC_y_sup = CL_y_sup.copy()
+        if np.isscalar(bc_y_sup) :
+            BC_y_sup = np.ones(self.Nx) * bc_y_sup
+        elif (( isinstance(bc_y_sup, np.ndarray) == True ) and
+              ( bc_y_sup.shape[0] == self.Nx and len(bc_y_sup.shape) == 1 )):
+            BC_y_sup = bc_y_sup.copy()
         else : 
-            raise ValueError(f"CL_y_sup must be scalar or 1D array of size Nx (CL_y_sup = {CL_y_sup}")
+            raise ValueError(f"bc_y_sup must be scalar or 1D array of size Nx (bc_y_sup = {bc_y_sup}")
 
         if alpha2 not in self.__dic_alpha2.keys() and (type(alpha2) == float):
             liste_piv, liste_F_fac = self.__factorize_matrix(alpha2)
@@ -94,8 +94,6 @@ class HelmholtzChannel:
         BC_y_inf_hat = scipy.fft.fft(BC_y_inf)
         BC_y_sup_hat = scipy.fft.fft(BC_y_sup)
 
-        #print("Appel HelmholtzChannel")
-        t0 = time.time()
 
         for i in range(0, self.Nx):
             rhs_hat_i = rhs_hat[i, 1:-1].copy()
@@ -108,7 +106,6 @@ class HelmholtzChannel:
             psi_num_hat[i, -1] = BC_y_inf_hat[i]
 
         psi_num = scipy.fft.ifft(psi_num_hat, axis = 0)
-        #print(f"Fait en {time.time()-t0:.3f} s")
         
         if real:
             return psi_num.real
@@ -127,6 +124,7 @@ class HelmholtzChannel:
         if type(value[0]) not in (int, str):
             warnings.warn(f"type {type(value)} not recommended for dictionnary key, please use int or str instead",
                           RuntimeWarning)
+
         self.__dic_alpha2[value[0]] = self.__factorize_matrix(value[1])
 
     def __factorize_matrix(self, alpha2):

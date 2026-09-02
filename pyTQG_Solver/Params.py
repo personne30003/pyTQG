@@ -41,7 +41,10 @@ class Params():
         return copy.deepcopy(self)
 
     def __repr__(self):
-        pass
+        str_out = "Params : \n"
+        for attr, val in self.__dict__.items():
+            str_out += f" - {attr} = {val}\n"
+        return str_out
 
     def to_NETCDF_attrs(self):
         NC_attrs = {}

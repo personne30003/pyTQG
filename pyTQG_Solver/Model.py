@@ -2,26 +2,38 @@
 Classe parente avec les fonctions et attributs communs des autres classes implémentant les modèles.
 C'est spécifique aux modèles type QG
 """
+import numpy as np
 
 import Grid
 import State
+import Params
+
 import HelmholtzChannel
 import HelmholtzBiperiodic
 
 class Model:
-    def __init__(self, Grid, params):
-        self.beta = 0.0
+    def __init__(self, Grid: Grid.Grid, params : Params.Params):
+
         self.State = State.State()
-        self.geometry = params.geometry
+        self._Grid = Grid
+        self._geometry = params.geometry
+
+        self._model_name = 'QG'
+        self.beta = 0.0
+        self._liste_NC_attrs = ["beta"]
         #A raffiner
-        if self.geometry == 'biperiodic':
-            self.EllipticSolver = HelmholtzBiperiodic(params.Nx,
-                                                      params.Ny,
-                                                      x_bounds = params.x_bounds,
-                                                      y_bounds = params.y_bounds)
-        elif self.geometry == 'zonal_channel' :
-            pass
-        elif self.geometry == 'basin' : 
+        if self._geometry == 'biperiodic':
+            self._EllipticSolver = HelmholtzBiperiodic.HelmholtzBiperiodic(params.Nx,
+                                                                           params.Ny,
+                                                                           x_bounds = params.x_bounds,
+                                                                           y_bounds = params.y_bounds)
+        elif self._geometry == 'zonal_channel' :
+            self._EllipticSolver = HelmholtzChannel.HelmholtzChannel(params.Nx,
+                                                                     params.Ny,
+                                                                     x_bounds = params.x_bounds,
+                                                                     y_bounds = params.y_bounds,
+                                                                     BC_y=('Dirichlet', 'Dirichlet'))
+        elif self._geometry == 'basin' :
             raise NotImplementedError("basin geometry not (yet ?) implemented")
         else : 
             raise ValueError(f"geometry parameter must be in {params.list_geometry}")
@@ -29,13 +41,34 @@ class Model:
     def RHS(state, t):
         raise NotImplementedError
 
+    def psi_from_vort(self, q):
+        raise NotImplementedError
+
     def U_max(self):
         raise NotImplementedError
 
-    def compute_diagnostic(self):
+    def compute_diagnostics(self):
         raise NotImplementedError
 
+    def psi_from_U(self, U : np.ndarray, constant = 0.0):
+        "U : vitesse zonale"
+        return self._Grid.int_cum(U, 'y')+constant
+
+    def __repr__(self):
+        str_out = f"Model : {self._model_name} \n"
+        for attr in self._liste_NC_attrs:
+            str_out += f" - {attr} = {getattr(self, attr)}\n"
+        return str_out
+
     def to_NETCDF_attrs(self):
-        "A voir si j'implémente ça ici ou non."
-        raise NotImplementedError
+        "Met certains parametres sous forme d'un dictionnaire {nom:valeur}"
+        dic_attrs = {'Model' : self._model_name}
+        for attr in self._liste_NC_attrs :
+            attr_value = getattr(self, attr)
+            if type(attr_value) == bool:
+                dic_attrs[attr] = str(attr_value)
+                continue
+            dic_attrs[attr] = attr_value
+
+        return dic_attrs
     

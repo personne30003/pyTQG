@@ -23,12 +23,12 @@ class Grid:
         
         ####Petites vérifications##################
         if type(self.__x_bounds) != tuple:
-            raise ValueError(f"x_bounds must be tuple, not {type(x_bounds)}")
+            raise ValueError(f"x_bounds must be tuple, not {type(self.__x_bounds)}")
         if len(self.__x_bounds) != 2:
             raise ValueError(f"x_bounds must have lenght 2, not {len(self.__x_bounds)}")
         
         if type(self.__y_bounds) != tuple:
-            raise ValueError(f"y_bounds must be tuple, not {type(y_bounds)}")
+            raise ValueError(f"y_bounds must be tuple, not {type(self.__y_bounds)}")
         if len(self.__y_bounds) != 2:
             raise ValueError(f"x_bounds must have lenght 2, not {len(self.__y_bounds)}")
 

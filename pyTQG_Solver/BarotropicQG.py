@@ -9,54 +9,64 @@ diagnostics :
 -PV totale
 """
 
+import numpy as np
+
 import Variable
-import Grid
-import State
 import Model
-import HelmholtzChannel
-import HelmholtzBiperiodic
+
 
 class BarotropicQG(Model.Model):
     def __init__(self):
         super().__init__()
-        psi = Variable.Variable(name = 'psi',
-                                type_var = 'diagnostic',
-                                field = True)
-        q = Variable.Variable(name = 'q',
-                              type_var = 'prognostic',
-                              field = True)
+        psi = Variable.Variable(name='psi',
+                                type_var='diagnostic',
+                                field=True)
+        PV = Variable.Variable(name='PV',
+                               type_var='prognostic',
+                               field=True)
         #diagnostics
-        kinetic_energy = Variable.Variable(name = 'kinetic_energy', 
-                                           type_var = 'diagnostic',
-                                           field = False)
-        PV_total = Variable.Variable(name = 'PV_total', 
-                              type_var = 'diagnostic',
-                              field = False)
-        
-        enstrophy = Variable.Variable(name = 'E_c', 
-                                      type_var = 'diagnostic',
-                                      field = False)
-        self.State.add_variables(psi, q, kinetic_energy, PV_total, enstrophy)
-        self.inv_Rd2 = 0.O
-        
-    def U_max(self):
-        u = self.Grid.derivative(self.State['psi'].value, "x")
-        v = self.Grid.derivative(self.State['psi'].value, "y")
-        U = np.sqrt(u**2 + v**2)
-        return np.max(U)
+        kinetic_energy = Variable.Variable(name='kinetic_energy',
+                                           type_var='diagnostic',
+                                           field=False)
+        PV_total = Variable.Variable(name='PV_total',
+                                     type_var='diagnostic',
+                                     field=False)
+
+        enstrophy = Variable.Variable(name='E_c',
+                                      type_var='diagnostic',
+                                      field=False)
+        self.State.add_variables(psi, PV, kinetic_energy, PV_total, enstrophy)
+        self.inv_Rd2 = 0.0
+        self.T_0 = 0.0  #Transport moyen (en configuration canal)
+        self._model_name = 'BarotropicQG'
+
+        self._liste_NC_attrs += ['inv_Rd2', 'T_0']
+
+        self._EllipticSolver.alpha2 = ('inv_Rd2', self.inv_Rd2)
+
 
     def RHS(self, state, t):
-        pass
+        new_state = state.copy()
+        new_state['psi'].value = self.psi_from_vort(state['PV'].value)
+        new_state['PV'].value = -self._Grid.jacobien(new_state['psi'].value, state['q'].value,
+                                                    BC_A=False, BC_B=True)
+        return new_state
 
-    def psi_from_vort(self):
-        pass
+    def U_max(self):
+        u = self._Grid.derivative(self.State['psi'].value, "x")
+        v = self._Grid.derivative(self.State['psi'].value, "y")
+        U = np.sqrt(u ** 2 + v ** 2)
+        return np.max(U)
 
-    def compute_diags(self):
-        u = self.Grid.derivative(self.State['psi'].value, "x")
-        v = self.Grid.derivative(self.State['psi'].value, "y")
-        self.State['kinetic_energy'].value = 0.5*self.Grid.integrate(u**2+v**2, "all")
-        self.State['PV_total'].value = self.Grid.integrate(self.State['q'].value, "all")
-        self.State['PV_total'].value = self.Grid.integrate(self.State['q'].value**2, "all")
-        
-        
-        
+    def psi_from_vort(self, vort):
+        return self._EllipticSolver.Solve(vort - self.beta * self._Grid.Y,
+                                          'inv_Rd2',
+                                          bc_y_inf=0.0,
+                                          bc_y_sup=self.T_0)
+
+    def compute_diagnostics(self):
+        u = self._Grid.derivative(self.State['psi'].value, "x")
+        v = self._Grid.derivative(self.State['psi'].value, "y")
+        self.State['kinetic_energy'].value = 0.5 * self._Grid.integrate(u ** 2 + v ** 2, "all")
+        self.State['PV_total'].value = self._Grid.integrate(self.State['PV'].value, "all")
+        self.State['PV_total'].value = self._Grid.integrate(self.State['PV'].value ** 2, "all")

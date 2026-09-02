@@ -76,6 +76,7 @@ class HelmholtzBiperiodic:
         else:
             raise ValueError(f"rhs must be scalar or np.ndarray of size Nx x Ny")
 
+        #Resolution ...
         RHS_hat = scipy.fft.fft2(RHS, axes = (0, 1))
         Psi_hat = -RHS_hat/( self.__KX2 + self.__KY2 + alpha2 )
         Psi = scipy.fft.ifft2(Psi_hat, axes = (0, 1))

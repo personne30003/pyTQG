@@ -16,7 +16,7 @@ import Params
 
 class TimeScheme:
     "Résout une équation de la forme du/dt=rhs(u, t, *args) par un schéma explicite"
-    def __init__(self, params, rhs, u0):
+    def __init__(self, params, rhs, u0, copy_initial = True):
         self.__SchemeList = {
             'Euler' : self.Euler,
             'LeapFrog' : self.LeapFrog,
@@ -31,7 +31,8 @@ class TimeScheme:
             
         self.scheme_type=params.time_scheme
         self.operator_scheme=self.__SchemeList[self.scheme_type]
-        self.u=u0.copy()
+
+        self.u=u0.copy() if copy_initial else u0
         #print(f"initialisation u={self.u}")
         self.rhs=rhs#Attention il s'agit d'une fonction
         self.t=0.0
