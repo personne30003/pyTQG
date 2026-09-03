@@ -163,3 +163,11 @@ class State:
     @property
     def scalar_values(self):
         return {var : self.__dic_var[var].value for var in self.__liste_scalars}
+
+    @property
+    def fields_attrs(self):
+        return {var : self.__dic_var[var].attrs for var in self.__liste_arrays}
+
+    @property
+    def scalar_attrs(self):
+        return {var : self.__dic_var[var].attrs for var in self.__liste_scalars}

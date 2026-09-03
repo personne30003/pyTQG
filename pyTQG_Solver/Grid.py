@@ -9,11 +9,11 @@ import Fourier
 import Chebyshev
 import Dealiasing
 import numpy as np
-import scipy
+
 import collections
 
 class Grid:
-    def __init__(self, params):
+    def __init__(self, params : Params.Params):
         self.__Nx = params.Nx
         self.__Ny = params.Ny
         self.__x_bounds = params.x_bounds
@@ -289,13 +289,12 @@ class Grid:
     
     def __repr__(self):
         str_out = f"""
-        Grid : \n
-        Geometry = {self.__geometry}\n
-        -Size {self.X.shape} \n
-        -Step : dx = {self.__dx}, dy = {self.__dy}\n
-        -Intervals : x = {self.__x_bounds}, y = {self.__y_bounds} \n
-        -DealiasParams : {self.__dealias_params}
-        """
+Grid : \n
+Geometry = {self.__geometry}\n
+-Size {self.X.shape} \n
+-Step : dx = {self.__dx}, dy = {self.__dy}\n
+-Intervals : x = {self.__x_bounds}, y = {self.__y_bounds} \n
+-DealiasParams : {self.__dealias_params}"""
         return str_out
 ###########Fonctions privées########################################################
     def __apply_along_axis(self, func, axis):
