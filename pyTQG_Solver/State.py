@@ -47,6 +47,7 @@ class State:
                 self.__liste_arrays.append(var.name)
         self.__liste_vars = list(self.__dic_var.keys())
 
+########Operateurs mathématiques#########################
     def __add__(self, other):
         if not isinstance(other, State):
             raise TypeError(f"sum only compatible with State, not {type(other)}")

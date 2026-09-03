@@ -143,7 +143,7 @@ class Grid:
             self.__int_y = lambda yy : Chebyshev.Cheb_quad(yy, weights = self.__int_weight_y, axis = 'y')
 
             self.__int_cum_x_1D = lambda xx : Fourier.Fourier_cumsum(xx, self.__dx)
-            self.__int_cum_y_1D = lambda yy : Chebyshev.Cheb_cumsum(yy, self.x)
+            self.__int_cum_y_1D = lambda yy : Chebyshev.Cheb_cumsum(yy, self.y)
             
         elif self.__geometry == 'basin':
             raise NotImplementedError("configuration basin not (yet) implemented")
@@ -271,6 +271,11 @@ class Grid:
             dyA_dxB = self.dealias(dyA_dxB, "all")
         return dxA_dyB - dyA_dxB
 
+    def laplacien(self, psi, BC = False):
+        "Calcule le laplacien 2D d'une fonction scalaire"
+        return (self.derivative(psi, "x", order = 2, BC_Dirichlet = BC)
+                + self.derivative(psi, "y", order = 2, BC_Dirichlet = BC))
+
     def int_cum(self, val, axis):
         "Calcule l'intégrale cumulée selon un axe ('x', 'y'). Renvoie un array de taille (Nx, Ny). Lent et peu utile ...."
         self.__check_shape(val)
@@ -296,7 +301,8 @@ class Grid:
     def __apply_along_axis(self, func, axis):
         """
         applique une fonction de la forme f(x) sur un axe donné ('x', 'y') ;
-        x est un tableau de taille (Nx, Ny) ; renvoie aussi un tableau de taille Ny. Utilisé pour la dérivation et le déaliasing 
+        x est un tableau de taille (Nx, Ny) ; renvoie aussi un tableau de taille Ny. Utilisé seulement pour les
+        intégrales cumulées (car trop lent)
         """
         axis_sel = None
         if axis == "x" : 

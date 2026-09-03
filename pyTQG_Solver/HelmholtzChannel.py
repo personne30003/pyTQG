@@ -41,8 +41,6 @@ class HelmholtzChannel:
             raise NotImplementedError("Only Dirichlet BC are implemented ...")
 
 
-        print("Elliptic solver choosen : HelmholtzChannel")
-
         if kx is None:
             self.kx = 2.0*np.pi*scipy.fft.fftfreq(self.Nx, d=(x_bounds[1] - x_bounds[0])/self.Nx)
         else : 
@@ -111,6 +109,13 @@ class HelmholtzChannel:
             return psi_num.real
         return psi_num
 
+    def __repr__(self):
+        str_out = "Elliptic Solver : HelhmholtzChannel\n"
+        if not self.__dic_alpha2:
+            return str_out
+        size_matrix_prefac = sum([self.__size_prefac_matrix(*self.__dic_alpha2[key]) for key in self.__dic_alpha2.keys()])
+        str_out += f"Size of matrices in memory : {size_matrix_prefac:.2f} MiB\n"
+        return str_out
     @property
     def alpha2(self):
         return self.__dic_alpha2
@@ -132,7 +137,6 @@ class HelmholtzChannel:
         liste_F_fac = [0 for i in range(0, self.Nx)]
 
         alpha_Id = alpha2*np.eye(self.Ny-2)
-        print(f"Matrix factorisation")
         for i in range(0, self.Nx):
             F_i = np.zeros((self.Ny - 2, self.Ny - 2))
             np.fill_diagonal(F_i, -(alpha2+self.kx[i]**2))
@@ -142,8 +146,6 @@ class HelmholtzChannel:
             liste_piv[i] = piv_i
             liste_F_fac[i] = lu_i
 
-        size_matrix_prefac = self.__size_prefac_matrix(liste_piv, liste_F_fac)
-        print(f"Matrix's size in memory : {size_matrix_prefac:.2f} MiB")
         return (liste_piv, liste_F_fac)
 
     def __size_prefac_matrix(self, *list_matrix):

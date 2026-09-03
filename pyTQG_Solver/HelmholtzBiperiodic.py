@@ -85,6 +85,8 @@ class HelmholtzBiperiodic:
             return Psi.real
         return Psi
 
+    def __repr__(self):
+        return r"Elliptic Solver : HelhmholtzBiperiodic\n"
     @property
     def alpha2(self):
         return self.__dic_alpha2

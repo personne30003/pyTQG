@@ -12,10 +12,10 @@ import HelmholtzChannel
 import HelmholtzBiperiodic
 
 class Model:
-    def __init__(self, Grid: Grid.Grid, params : Params.Params):
+    def __init__(self, params : Params.Params, grid : Grid.Grid):
 
         self.State = State.State()
-        self._Grid = Grid
+        self._Grid = grid
         self._geometry = params.geometry
 
         self._model_name = 'QG'
@@ -44,6 +44,8 @@ class Model:
     def psi_from_vort(self, q):
         raise NotImplementedError
 
+    def vort_from_psi(self, psi):
+        raise NotImplementedError
     def U_max(self):
         raise NotImplementedError
 
@@ -51,13 +53,14 @@ class Model:
         raise NotImplementedError
 
     def psi_from_U(self, U : np.ndarray, constant = 0.0):
-        "U : vitesse zonale"
-        return self._Grid.int_cum(U, 'y')+constant
+        "Renvoie la fonction de courant psi(x, y) à partir d'un profil de vitesse zonale u(x, y) = U(y)"
+        return -self._Grid.int_cum(U, 'y')+constant
 
     def __repr__(self):
         str_out = f"Model : {self._model_name} \n"
         for attr in self._liste_NC_attrs:
             str_out += f" - {attr} = {getattr(self, attr)}\n"
+        str_out += self._EllipticSolver.__repr__()
         return str_out
 
     def to_NETCDF_attrs(self):

@@ -11,13 +11,16 @@ diagnostics :
 
 import numpy as np
 
+import Params
+import Grid
 import Variable
 import Model
 
 
+
 class BarotropicQG(Model.Model):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, params : Params.Params, grid : Grid.Grid):
+        super().__init__(params, grid)
         psi = Variable.Variable(name='psi',
                                 type_var='diagnostic',
                                 field=True)
@@ -58,12 +61,21 @@ class BarotropicQG(Model.Model):
         U = np.sqrt(u ** 2 + v ** 2)
         return np.max(U)
 
-    def psi_from_vort(self, vort):
-        return self._EllipticSolver.Solve(vort - self.beta * self._Grid.Y,
-                                          'inv_Rd2',
-                                          bc_y_inf=0.0,
-                                          bc_y_sup=self.T_0)
+    def psi_from_vort(self, vort, assign = False):
+        psi = self._EllipticSolver.Solve(vort - self.beta * self._Grid.Y,
+                                         'inv_Rd2',
+                                         bc_y_inf=0.0,
+                                         bc_y_sup=self.T_0)
+        if assign :
+            self.State['psi'].value = psi
+        return psi
 
+    def vort_from_psi(self, psi, assign = False):
+        vort = self._Grid.laplacien(psi) - self.inv_Rd2 * psi + self.beta * self._Grid.Y
+
+        if assign :
+            self.State['q'].value = vort
+        return vort
     def compute_diagnostics(self):
         u = self._Grid.derivative(self.State['psi'].value, "x")
         v = self._Grid.derivative(self.State['psi'].value, "y")
