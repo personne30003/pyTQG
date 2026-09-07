@@ -1,12 +1,22 @@
 """
 Modele QG barotrope (1 couche active sur 1 couche passive)  :
-q = (d2/dx^2+d2/dy^2)psi - psi/(R_d^2)+beta*y
+(d2/dx^2+d2/dy^2)psi - psi/(R_d^2) = q - beta*y
 d q /d t = -Jac(psi, q)
 
-diagnostics :
--Energie cinetique totale
--Enstrophie totale
--PV totale
+vorticité relative :
+
+zeta = (d2/dx^2+d2/dy^2)psi  = q - beta * y + psi/(R_d^2)
+
+diagnostics (grandeurs intégrées) :
+-Energie cinetique totale :
+E_c =  1 / 2 ( (d psi / d x)^2 + (d psi / d y) ^2)
+
+-Enstrophie totale :
+Z = q^2
+
+-PV totale :
+Q = q
+
 """
 
 import numpy as np
@@ -27,6 +37,9 @@ class BarotropicQG(QG_model.QG_model):
         PV = variable.Variable(name='PV',
                                type_var='prognostic',
                                field=True)
+        vort = psi = variable.Variable(name='vorticity',
+                                       type_var='diagnostic',
+                                       field=True)
         #diagnostics
         kinetic_energy = variable.Variable(name='kinetic_energy',
                                            type_var='diagnostic',
@@ -38,7 +51,12 @@ class BarotropicQG(QG_model.QG_model):
         enstrophy = variable.Variable(name='enstrophy',
                                       type_var='diagnostic',
                                       field=False)
-        self.State.add_variables(psi, PV, kinetic_energy, PV_total, enstrophy)
+        self.State.add_variables(psi,
+                                 vort,
+                                 PV,
+                                 kinetic_energy,
+                                 PV_total,
+                                 enstrophy)
         self.inv_Rd2 = 0.0
         self.T_0 = 0.0  #Transport moyen (en configuration canal)
         self._model_name = 'BarotropicQG'
@@ -50,11 +68,12 @@ class BarotropicQG(QG_model.QG_model):
 
     def RHS(self, state, t):
         new_state = state.copy()
-        new_state['psi'].value = self.psi_from_vort(state['PV'].value)
+        new_state['psi'].value = self.psi_from_PV(state['PV'].value)
         new_state['PV'].value = -self._Grid.jacobien(new_state['psi'].value,
                                                      state['PV'].value,
                                                      BC_A=False,
                                                      BC_B=True)
+        new_state['vorticity'].value = self.vort_from_PV(new_state['PV'].value)
         return new_state
 
     def U_max(self):
@@ -63,7 +82,7 @@ class BarotropicQG(QG_model.QG_model):
         U = np.sqrt(u ** 2 + v ** 2)
         return np.max(U)
 
-    def psi_from_vort(self, vort, assign = False):
+    def psi_from_PV(self, vort, assign = False):
         psi = self._EllipticSolver.Solve(vort - self.beta * self._Grid.Y,
                                          'inv_Rd2',
                                          bc_y_inf=0.0,
@@ -72,12 +91,21 @@ class BarotropicQG(QG_model.QG_model):
             self.State['psi'].value = psi
         return psi
 
-    def vort_from_psi(self, psi, assign = False):
+
+    def PV_from_psi(self, psi, assign = False):
         vort = self._Grid.laplacien(psi) - self.inv_Rd2 * psi + self.beta * self._Grid.Y
 
         if assign :
-            self.State['q'].value = vort
+            self.State['PV'].value = vort
         return vort
+
+    def vort_from_PV(self, PV = None):
+        pv = self.State['PV'].value
+        if PV is not None:
+            pv = PV
+        vort = pv - self.beta*self._Grid.Y + self.State['psi'].value*self.inv_Rd2
+        return vort
+
     def compute_diagnostics(self):
         u = self._Grid.derivative(self.State['psi'].value, "x")
         v = self._Grid.derivative(self.State['psi'].value, "y")

@@ -38,14 +38,18 @@ class QG_model:
         else : 
             raise ValueError(f"geometry parameter must be in {params.list_geometry}")
 
-    def RHS(state, t):
+    def RHS(self, state, t):
         raise NotImplementedError
 
-    def psi_from_vort(self, q, assign = False):
+    def psi_from_PV(self, q, assign = False):
         raise NotImplementedError
 
-    def vort_from_psi(self, psi, assign = False):
+    def PV_from_psi(self, psi, assign = False):
         raise NotImplementedError
+
+    def vort_from_PV(self, PV = None):
+        raise NotImplementedError
+
     def U_max(self):
         raise NotImplementedError
 
@@ -82,7 +86,7 @@ class QG_model:
             dic_attrs[attr] = attr_value
 
         return dic_attrs
-    def assign_init_field(self, var, value):
+    def assign_init_field(self, var, value : np.ndarray):
         if var not in self.State.fields_vars :
             raise ValueError(f"field var must be in {self.State.fields_vars}")
         if var.shape != self._Grid.X.shape:

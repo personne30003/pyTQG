@@ -17,8 +17,7 @@ def animate(Da:xr.DataArray,
             cmap='seismic',
             logx=False,
             logy=False,
-            regular_grid = True,
-            fps = 50):#50 images par secondes
+            regular_grid = True):
     "Genere une animation. Uniquement pour Jupyter Notebook. Tiré de mon module (perso) f2dxarray"
     if clim == None:
         clim = (float(Da.min()), float(Da.max()))
