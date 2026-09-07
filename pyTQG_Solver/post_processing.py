@@ -7,23 +7,46 @@ travail tout seul !
 
 
 import xarray as xr
-import holoviews
+import hvplot.xarray
 
-
-def animate(Da:xr.DataArray, width=500, height=500, clim=None, title=None, cmap='seismic', logx=False, logy=False):
+def animate(Da:xr.DataArray,
+            width=500,
+            height=500,
+            clim=None,
+            title=None,
+            cmap='seismic',
+            logx=False,
+            logy=False,
+            regular_grid = True,
+            fps = 50):#50 images par secondes
     "Genere une animation. Uniquement pour Jupyter Notebook. Tiré de mon module (perso) f2dxarray"
     if clim == None:
         clim = (float(Da.min()), float(Da.max()))
+    if regular_grid :
+        anim = Da.hvplot(groupby = 't',
+                         title = title,
+                         framewise = False,
+                         width = width,
+                         height = height,
+                         widget_type = "scrubber",
+                         widget_location = "bottom",
+                         clim = clim,
+                         cmap = cmap,
+                         logx = logx,
+                         logy = logy,
+                         dynamic = True)
+    else :
+        anim = Da.hvplot.quadmesh(groupby = 't',
+                                  title = title,
+                                  framewise = False,
+                                  width = width,
+                                  height = height,
+                                  widget_type = "scrubber",
+                                  widget_location = "bottom",
+                                  clim = clim,
+                                  cmap = cmap,
+                                  logx = logx,
+                                  logy = logy,
+                                  dynamic = True)
 
-    anim = Da.hvplot(groupby='t',
-                     title=title,
-                     framewise=False,
-                     width=width,
-                     height=height,
-                     widget_type="scrubber",
-                     widget_location="bottom",
-                     clim=clim,
-                     cmap=cmap,
-                     logx=logx,
-                     logy=logy)
     return anim

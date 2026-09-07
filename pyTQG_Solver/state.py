@@ -42,9 +42,9 @@ class State:
             if var.type == 'diagnostic':
                 self.__liste_diagnostic.append(var.name)
             if var.field : 
-                self.__liste_scalars.append(var.name)
-            else :
                 self.__liste_arrays.append(var.name)
+            else :
+                self.__liste_scalars.append(var.name)
         self.__liste_vars = list(self.__dic_var.keys())
 
 ########Operateurs mathématiques#########################

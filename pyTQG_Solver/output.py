@@ -16,6 +16,7 @@ import warnings
 import parameters
 import QG_model
 import grid
+
 class Output:
     def __init__(self,
                  params : parameters.Params,
@@ -30,7 +31,7 @@ class Output:
         self.y = grid.y
         self.attrs_Ds = {**attrs_params, **attrs_model}
         self.name_his = self._exp_name + '_his.nc'
-        self.name_diag = self._exp_name + '_diag.nc'
+        self.name_diag = self._exp_name + '_diags.nc'
         self.path_his = str(path_output / self.name_his)
         self.path_diag = str(path_output / self.name_diag)
         #teste l'existence des fichiers
@@ -42,20 +43,34 @@ class Output:
             warnings.warn(f"file {self.path_diag} already exist. It will be deleted and recreated",
                           RuntimeWarning)
             os.remove(self.path_diag)
+        self.__create_NC_fields(model)
+        self.__create_NC_scalars(model)
+        self.idx_diag = 0
+        self.idx_his = 0
 
-    def save_diags(self, state, t):
-        pass
+    def save_diags(self, Model : QG_model.QG_model, t):
+        with nc4.Dataset(self.path_diag, mode='a') as NC_file:
+            NC_file.variables['t'][self.idx_diag] = t
+            for scalar_var in Model.State.scalar_vars:
+                NC_file.variables[scalar_var][self.idx_diag] = Model.State.scalar_values[scalar_var]
+            NC_file.sync()
+        self.idx_diag += 1
 
-    def save_his(self, state, t):
+    def save_his(self, Model : QG_model.QG_model, t):
         with nc4.Dataset(self.path_his, mode = 'a') as NC_file:
-            NC_file.variables['t'][-1] =
+            NC_file.variables['t'][self.idx_his] = t
+            for field_var in Model.State.fields_vars :
+                NC_file.variables[field_var][self.idx_his, :, :] = Model.State.fields_values[field_var]
+            NC_file.sync()
+        self.idx_his +=1
 
-    def __create_NC_fields(self, model : Model.Model):
+
+    def __create_NC_fields(self, model : QG_model.QG_model):
         with nc4.Dataset(self.path_his, mode = 'w', format = 'NETCDF4') as NC_file:
             #Creation dimension
             NC_file.createDimension('x', self.x.size)
             NC_file.createDimension('y', self.y.size)
-            NC_file.createDimension('time', None)
+            NC_file.createDimension('t', None)
 
             #Creation coordonnées
             x_var  = NC_file.createVariable('x', 'f8', ('x',))
@@ -67,13 +82,21 @@ class Output:
 
             for field in model.State.fields_vars :
                 NC_file.createVariable(field, 'f8', ('t', 'x', 'y'), zlib = True)
-            NC_file.title = self._exp_name + '_fields'
+            NC_file.title = self.name_his
+            self.__write_nc_attrs(NC_file, self.attrs_Ds)
+            NC_file.sync()
 
-    def __create_NC_scalars(self, model : Model.Model):
-        with nc4.Dataset(self.path_his, mode = 'w', format = 'NETCDF4') as NC_file:
+    def __create_NC_scalars(self, model : QG_model.QG_model):
+        with nc4.Dataset(self.path_diag, mode = 'w', format = 'NETCDF4') as NC_file:
             NC_file.createDimension('t', None)
             NC_file.createVariable('t', 'f8', ('t', ))
 
             for scalar in model.State.scalar_vars:
                 NC_file.createVariable(scalar, 'f8', ('t'), zlib = True)
-            NC_file.title = self._exp_name + '_diagnostics'
+            NC_file.title = self.name_diag
+            self.__write_nc_attrs(NC_file, self.attrs_Ds)
+            NC_file.sync()
+
+    def __write_nc_attrs(self,nc_file : nc4.Dataset, attrs : dict):
+        for key, value in attrs.items():
+            nc_file.setncattr(key, value)

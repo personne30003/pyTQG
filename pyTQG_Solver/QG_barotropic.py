@@ -35,7 +35,7 @@ class BarotropicQG(QG_model.QG_model):
                                      type_var='diagnostic',
                                      field=False)
 
-        enstrophy = variable.Variable(name='E_c',
+        enstrophy = variable.Variable(name='enstrophy',
                                       type_var='diagnostic',
                                       field=False)
         self.State.add_variables(psi, PV, kinetic_energy, PV_total, enstrophy)
@@ -51,8 +51,10 @@ class BarotropicQG(QG_model.QG_model):
     def RHS(self, state, t):
         new_state = state.copy()
         new_state['psi'].value = self.psi_from_vort(state['PV'].value)
-        new_state['PV'].value = -self._Grid.jacobien(new_state['psi'].value, state['q'].value,
-                                                    BC_A=False, BC_B=True)
+        new_state['PV'].value = -self._Grid.jacobien(new_state['psi'].value,
+                                                     state['PV'].value,
+                                                     BC_A=False,
+                                                     BC_B=True)
         return new_state
 
     def U_max(self):
@@ -81,4 +83,4 @@ class BarotropicQG(QG_model.QG_model):
         v = self._Grid.derivative(self.State['psi'].value, "y")
         self.State['kinetic_energy'].value = 0.5 * self._Grid.integrate(u ** 2 + v ** 2, "all")
         self.State['PV_total'].value = self._Grid.integrate(self.State['PV'].value, "all")
-        self.State['PV_total'].value = self._Grid.integrate(self.State['PV'].value ** 2, "all")
+        self.State['enstrophy'].value = self._Grid.integrate(self.State['PV'].value ** 2, "all")
