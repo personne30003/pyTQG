@@ -6,7 +6,7 @@ Validé du premier coup !!
 """
 import numpy as np
 import scipy
-import Chebyshev
+import chebyshev
 import sys
 import time
 import warnings
@@ -45,7 +45,7 @@ class HelmholtzChannel:
             self.kx = 2.0*np.pi*scipy.fft.fftfreq(self.Nx, d=(x_bounds[1] - x_bounds[0])/self.Nx)
         else : 
             self.kx = kx
-        self.D2 = Chebyshev.Cheb_mat(self.Ny, a = y_bounds[0], b=y_bounds[-1], Dirichlet_BC = False, M=2)
+        self.D2 = chebyshev.Cheb_mat(self.Ny, a = y_bounds[0], b=y_bounds[-1], Dirichlet_BC = False, M=2)
         self.__dic_alpha2 = {}
 
     def Solve(self, rhs, alpha2, bc_y_inf=0.0, bc_y_sup=0.0, real = True):

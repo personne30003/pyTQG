@@ -10,20 +10,19 @@ import shutil
 import time
 
 
-import Output
-import TimeScheme
-import Params
-import Grid
-import Model
+import output
+import time_scheme
+import parameters
+import grid
 
 
 
 class pyTQG:
 
     def __init__(self,
-                 params : Params.Params,
-                 grid: Grid.Grid,
-                 model : Model.Model):
+                 params : parameters.Params,
+                 Grid: grid.Grid,
+                 model):
 
         pass
 

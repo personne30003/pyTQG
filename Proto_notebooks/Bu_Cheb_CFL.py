@@ -14,10 +14,10 @@ import xarray as xr
 import scipy
 import os
 #Modules maison
-import Fourier
-import Chebyshev
-import Params
-import TimeScheme
+import fourier as Fourier
+import chebyschev as Chebyshev
+import parameters as Params
+import time_scheme as TimeScheme
 import Stab_Bu
 import time
 

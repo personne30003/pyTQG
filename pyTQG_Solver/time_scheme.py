@@ -9,14 +9,13 @@ Fortement inspiré de Fluid2d (auteur : G.Roullet, LOPS). Oui, meme le nom est i
 
 """
 
-import numpy as np
-import Params
+import parameters
 
 
 
 class TimeScheme:
     "Résout une équation de la forme du/dt=rhs(u, t, *args) par un schéma explicite"
-    def __init__(self, params, rhs, u0, copy_initial = True):
+    def __init__(self, params : parameters.Params, rhs, u0, copy_initial = True):
         self.__SchemeList = {
             'Euler' : self.Euler,
             'LeapFrog' : self.LeapFrog,

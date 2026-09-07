@@ -4,18 +4,18 @@ C'est spécifique aux modèles type QG
 """
 import numpy as np
 
-import Grid
-import State
-import Params
+import grid
+import state
+import parameters
 
-import HelmholtzChannel
-import HelmholtzBiperiodic
+import helmholtz_channel
+import helmholtz_biperiodic
 
-class Model:
-    def __init__(self, params : Params.Params, grid : Grid.Grid):
+class QG_model:
+    def __init__(self, params : parameters.Params, Grid : grid.Grid):
 
-        self.State = State.State()
-        self._Grid = grid
+        self.State = state.State()
+        self._Grid = Grid
         self._geometry = params.geometry
 
         self._model_name = 'QG'
@@ -23,16 +23,16 @@ class Model:
         self._liste_NC_attrs = ["beta"]
         #A raffiner
         if self._geometry == 'biperiodic':
-            self._EllipticSolver = HelmholtzBiperiodic.HelmholtzBiperiodic(params.Nx,
-                                                                           params.Ny,
-                                                                           x_bounds = params.x_bounds,
-                                                                           y_bounds = params.y_bounds)
+            self._EllipticSolver = helmholtz_biperiodic.HelmholtzBiperiodic(params.Nx,
+                                                                            params.Ny,
+                                                                            x_bounds = params.x_bounds,
+                                                                            y_bounds = params.y_bounds)
         elif self._geometry == 'zonal_channel' :
-            self._EllipticSolver = HelmholtzChannel.HelmholtzChannel(params.Nx,
-                                                                     params.Ny,
-                                                                     x_bounds = params.x_bounds,
-                                                                     y_bounds = params.y_bounds,
-                                                                     BC_y=('Dirichlet', 'Dirichlet'))
+            self._EllipticSolver = helmholtz_channel.HelmholtzChannel(params.Nx,
+                                                                      params.Ny,
+                                                                      x_bounds = params.x_bounds,
+                                                                      y_bounds = params.y_bounds,
+                                                                      BC_y=('Dirichlet', 'Dirichlet'))
         elif self._geometry == 'basin' :
             raise NotImplementedError("basin geometry not (yet ?) implemented")
         else : 

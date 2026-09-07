@@ -11,31 +11,31 @@ diagnostics :
 
 import numpy as np
 
-import Params
-import Grid
-import Variable
-import Model
+import parameters
+import grid
+import variable
+import QG_model
 
 
 
-class BarotropicQG(Model.Model):
-    def __init__(self, params : Params.Params, grid : Grid.Grid):
-        super().__init__(params, grid)
-        psi = Variable.Variable(name='psi',
+class BarotropicQG(QG_model.QG_model):
+    def __init__(self, params : parameters.Params, Grid : grid.Grid):
+        super().__init__(params, Grid)
+        psi = variable.Variable(name='psi',
                                 type_var='diagnostic',
                                 field=True)
-        PV = Variable.Variable(name='PV',
+        PV = variable.Variable(name='PV',
                                type_var='prognostic',
                                field=True)
         #diagnostics
-        kinetic_energy = Variable.Variable(name='kinetic_energy',
+        kinetic_energy = variable.Variable(name='kinetic_energy',
                                            type_var='diagnostic',
                                            field=False)
-        PV_total = Variable.Variable(name='PV_total',
+        PV_total = variable.Variable(name='PV_total',
                                      type_var='diagnostic',
                                      field=False)
 
-        enstrophy = Variable.Variable(name='E_c',
+        enstrophy = variable.Variable(name='E_c',
                                       type_var='diagnostic',
                                       field=False)
         self.State.add_variables(psi, PV, kinetic_energy, PV_total, enstrophy)

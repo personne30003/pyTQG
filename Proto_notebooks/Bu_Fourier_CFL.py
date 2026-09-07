@@ -22,9 +22,9 @@ import IPython.display as ipd
 import xrft
 
 #Modules maison
-import Fourier
-import Params
-import TimeScheme
+import fourier as Fourier
+import parameters as Params
+import time_scheme as TimeScheme
 import time
 
 class Bu_Fourier:

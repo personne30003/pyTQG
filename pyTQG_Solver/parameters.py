@@ -6,7 +6,7 @@ TODO : arreter d'initialiser les paramètres dans la classe, et les mettre dans 
 import os
 import sys
 import datetime
-import Dealiasing
+import dealiasing
 import copy
 import numpy as np
 import dataclasses
@@ -22,7 +22,7 @@ class Params():
         self.list_geometry = ('basin', 'biperiodic', 'zonal_channel')
         self.geometry = 'biperiodic'
 
-        self.dealias_params = Dealiasing.DealiasParams()
+        self.dealias_params = dealiasing.DealiasParams()
         
         self.time_scheme='Euler'
         self.max_time=10.0

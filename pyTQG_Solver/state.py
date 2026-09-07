@@ -6,7 +6,7 @@ les opérateurs __add__ et __mul__ (par un scalaire) ne concernent que les varia
 
 """
 
-import Variable
+import variable
 import copy
 import numpy as np
 import collections
@@ -29,7 +29,7 @@ class State:
             raise ValueError(f"duplications in input variable : {liste_duplications_args}")
             
         for var in args : 
-            if type(var) != Variable.Variable :
+            if type(var) != variable.Variable :
                 raise ValueError(f"*args must be Variable.Variable, not {type(var)}")
             self.__dic_var[var.name] = var.copy()
 

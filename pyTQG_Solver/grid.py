@@ -4,16 +4,16 @@ Classe regroupant les opérateurs de dérivation, intégration et déaliasing
 """
 
 
-import Params
-import Fourier
-import Chebyshev
-import Dealiasing
+import parameters
+import fourier
+import chebyshev
+import dealiasing
 import numpy as np
 
 import collections
 
 class Grid:
-    def __init__(self, params : Params.Params):
+    def __init__(self, params : parameters.Params):
         self.__Nx = params.Nx
         self.__Ny = params.Ny
         self.__x_bounds = params.x_bounds
@@ -72,55 +72,55 @@ class Grid:
             self.__dy = self.y[1] - self.y[0]
 
             #fonctions 1D
-            self.__dealias_x = lambda xx : Dealiasing.Fourier_dealias(xx,
+            self.__dealias_x = lambda xx : dealiasing.Fourier_dealias(xx,
                                                                          self.__dx,
                                                                          coeff_dealias = self.__dealias_params.dealias_Fourier_coeff,
                                                                          axis = 'x')
-            self.__dealias_y = lambda yy : Dealiasing.Fourier_dealias(yy,
+            self.__dealias_y = lambda yy : dealiasing.Fourier_dealias(yy,
                                                                          self.__dy,
                                                                          coeff_dealias = self.__dealias_params.dealias_Fourier_coeff,
                                                                          axis = 'y')
 
             self.__int_weight_x = self.__dx
             self.__int_weight_y = self.__dy
-            self.__int_x_1D = lambda xx : Fourier.Fourier_quad(xx, self.__int_weight_x, axis = 'x')
-            self.__int_y_1D = lambda yy : Fourier.Fourier_quad(yy, self.__int_weight_y, axis = 'y')
+            self.__int_x_1D = lambda xx : fourier.Fourier_quad(xx, self.__int_weight_x, axis = 'x')
+            self.__int_y_1D = lambda yy : fourier.Fourier_quad(yy, self.__int_weight_y, axis = 'y')
 
-            self.__int_cum_x_1D = lambda xx : Fourier.Fourier_cumsum(xx, self.__dx)
-            self.__int_cum_y_1D = lambda yy : Fourier.Fourier_cumsum(yy, self.__dy)
+            self.__int_cum_x_1D = lambda xx : fourier.Fourier_cumsum(xx, self.__dx)
+            self.__int_cum_y_1D = lambda yy : fourier.Fourier_cumsum(yy, self.__dy)
             
-            self.__dx_1D = lambda xx : Fourier.Fourier_deriv(xx, order = 1, a = self.__x_bounds[0], b = self.__x_bounds[1], axis = 'x')
-            self.__dy_1D = lambda yy : Fourier.Fourier_deriv(yy, order = 1, a = self.__y_bounds[0], b = self.__y_bounds[1], axis = 'y')
+            self.__dx_1D = lambda xx : fourier.Fourier_deriv(xx, order = 1, a = self.__x_bounds[0], b = self.__x_bounds[1], axis = 'x')
+            self.__dy_1D = lambda yy : fourier.Fourier_deriv(yy, order = 1, a = self.__y_bounds[0], b = self.__y_bounds[1], axis = 'y')
 
             self.__dy_1D_BC = self.__dy_1D
             self.__dx_1D_BC = self.__dx_1D
 
-            self.__d2x_1D = lambda xx : Fourier.Fourier_deriv(xx, order = 2, a = self.__x_bounds[0], b = self.__x_bounds[1], axis = 'x')
-            self.__d2y_1D = lambda yy : Fourier.Fourier_deriv(yy, order = 2, a = self.__y_bounds[0], b = self.__y_bounds[1], axis = 'y')
+            self.__d2x_1D = lambda xx : fourier.Fourier_deriv(xx, order = 2, a = self.__x_bounds[0], b = self.__x_bounds[1], axis = 'x')
+            self.__d2y_1D = lambda yy : fourier.Fourier_deriv(yy, order = 2, a = self.__y_bounds[0], b = self.__y_bounds[1], axis = 'y')
 
             self.__d2y_1D_BC = self.__d2y_1D
             self.__d2x_1D_BC = self.__d2x_1D
             
         elif self.__geometry == 'zonal_channel' : 
             self.x = np.linspace(self.__x_bounds[0], self.__x_bounds[1], self.__Nx, endpoint = False)
-            self.y = Chebyshev.collocation_points(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1])
+            self.y = chebyshev.collocation_points(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1])
             self.__dx = self.x[1] - self.x[0]
             self.__dy = np.abs(self.y[1]-self.y[0])#les points sont les plus rapprochés aux bords
 
 
             self.__int_weight_x = self.__dx
-            self.__int_weight_y = Chebyshev.Clenshaw_Curtis_weight(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1])
+            self.__int_weight_y = chebyshev.Clenshaw_Curtis_weight(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1])
 
-            self.__Dy = Chebyshev.Cheb_mat(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1]).T
-            self.__D2y = Chebyshev.Cheb_mat(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1], M=2).T
+            self.__Dy = chebyshev.Cheb_mat(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1]).T
+            self.__D2y = chebyshev.Cheb_mat(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1], M=2).T
 
-            self.__Dy_BC = Chebyshev.Cheb_mat(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1], Dirichlet_BC = True).T
-            self.__D2y_BC = Chebyshev.Cheb_mat(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1], Dirichlet_BC = True, M = 2).T
+            self.__Dy_BC = chebyshev.Cheb_mat(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1], Dirichlet_BC = True).T
+            self.__D2y_BC = chebyshev.Cheb_mat(self.__Ny, a = self.__y_bounds[0], b = self.__y_bounds[1], Dirichlet_BC = True, M = 2).T
 
-            self.__dx_1D = lambda xx : Fourier.Fourier_deriv(xx, order = 1, a = self.__x_bounds[0], b = self.__x_bounds[1], axis = 'x')
+            self.__dx_1D = lambda xx : fourier.Fourier_deriv(xx, order = 1, a = self.__x_bounds[0], b = self.__x_bounds[1], axis = 'x')
             self.__dy_1D = lambda yy : yy @ self.__Dy
 
-            self.__d2x_1D = lambda xx : Fourier.Fourier_deriv(xx, order = 2, a = self.__x_bounds[0], b = self.__x_bounds[1], axis = 'x')
+            self.__d2x_1D = lambda xx : fourier.Fourier_deriv(xx, order = 2, a = self.__x_bounds[0], b = self.__x_bounds[1], axis = 'x')
             self.__d2y_1D = lambda yy : yy @ self.__D2y
 
             self.__dx_1D_BC = self.__dx_1D
@@ -129,21 +129,21 @@ class Grid:
             self.__d2x_1D_BC = self.__d2x_1D
             self.__d2y_1D_BC = lambda yy : yy @ self.__D2y_BC
 
-            self.__dealias_x = lambda xx : Dealiasing.Fourier_dealias(xx,
+            self.__dealias_x = lambda xx : dealiasing.Fourier_dealias(xx,
                                                                          self.__dx,
                                                                          coeff_dealias = self.__dealias_params.dealias_Fourier_coeff,
                                                                          axis = 'x')
             
-            self.__dealias_y = lambda yy : Dealiasing.exp_filter_DCT(yy,
+            self.__dealias_y = lambda yy : dealiasing.exp_filter_DCT(yy,
                                                                         alpha = self.__dealias_params.dealias_exp_alpha,
                                                                         p = self.__dealias_params.dealias_exp_p,
                                                                         axis = 'y')
             
-            self.__int_x = lambda xx : Fourier.Fourier_quad(xx, self.__int_weight_x, axis = 'x')
-            self.__int_y = lambda yy : Chebyshev.Cheb_quad(yy, weights = self.__int_weight_y, axis = 'y')
+            self.__int_x = lambda xx : fourier.Fourier_quad(xx, self.__int_weight_x, axis = 'x')
+            self.__int_y = lambda yy : chebyshev.Cheb_quad(yy, weights = self.__int_weight_y, axis = 'y')
 
-            self.__int_cum_x_1D = lambda xx : Fourier.Fourier_cumsum(xx, self.__dx)
-            self.__int_cum_y_1D = lambda yy : Chebyshev.Cheb_cumsum(yy, self.y)
+            self.__int_cum_x_1D = lambda xx : fourier.Fourier_cumsum(xx, self.__dx)
+            self.__int_cum_y_1D = lambda yy : chebyshev.Cheb_cumsum(yy, self.y)
             
         elif self.__geometry == 'basin':
             raise NotImplementedError("configuration basin not (yet) implemented")
