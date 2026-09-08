@@ -72,7 +72,7 @@ class BarotropicQG(QG_model.QG_model):
         new_state['PV'].value = -self._Grid.jacobien(new_state['psi'].value,
                                                      state['PV'].value,
                                                      BC_A=False,
-                                                     BC_B=True)
+                                                     BC_B=False)
         new_state['vorticity'].value = self.vort_from_PV(new_state['PV'].value)
         return new_state
 
@@ -111,4 +111,4 @@ class BarotropicQG(QG_model.QG_model):
         v = self._Grid.derivative(self.State['psi'].value, "y")
         self.State['kinetic_energy'].value = 0.5 * self._Grid.integrate(u ** 2 + v ** 2, "all")
         self.State['PV_total'].value = self._Grid.integrate(self.State['PV'].value, "all")
-        self.State['enstrophy'].value = self._Grid.integrate(self.State['PV'].value ** 2, "all")
+        self.State['enstrophy'].value = 0.5 * self._Grid.integrate(self.State['PV'].value ** 2, "all")

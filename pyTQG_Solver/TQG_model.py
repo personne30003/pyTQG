@@ -98,13 +98,18 @@ class ThermalQG(QG_model.QG_model):
         jac_psi_PV = self._Grid.jacobien(new_State['psi'].value,
                                          new_State['PV'].value,
                                          BC_A = False,
-                                         BC_B = True)
-        jac_psi_theta = self._Grid.jacobien(new_State['psi'].value,
-                                            new_State['theta'].value,
-                                            BC_A = False,
-                                            BC_B = True)
-        new_State['PV'].value = -jac_psi_PV + self.inv_Rd2 * jac_psi_theta
-        new_State['theta'].value = -jac_psi_theta
+                                         BC_B = False)
+        jac_psi_theta_PV = self._Grid.jacobien(new_State['psi'].value,
+                                               new_State['theta'].value,
+                                               BC_A = False,
+                                               BC_B = False)# Terme source
+        jac_psi_theta_buo = self._Grid.jacobien(new_State['psi'].value,
+                                                new_State['theta'].value,
+                                                BC_A = False,
+                                                BC_B = True)#apparait dans conservation de la flottabilité
+
+        new_State['PV'].value = -jac_psi_PV + self.inv_Rd2 * jac_psi_theta_PV
+        new_State['theta'].value = -jac_psi_theta_buo
         new_State['vort'].value = self.vort_from_PV(new_State['PV'].value)
 
         return new_State
@@ -143,10 +148,11 @@ class ThermalQG(QG_model.QG_model):
 
     def compute_diagnostics(self):
         self.State['PV_total'].value = self._Grid.integrate(self.State['PV'].value, 'all')
-        self.State['enstrophy'].value = self._Grid.integrate(self.State['PV'].value**2, 'all')
+        self.State['enstrophy'].value = 0.5 * self._Grid.integrate(self.State['PV'].value**2, 'all')
         self.State['theta_total'].value = self._Grid.integrate(self.State['theta'].value, 'all')
         u = self._Grid.derivative(self.State['psi'].value, "x")
         v = self._Grid.derivative(self.State['psi'].value, "y")
         self.State['kinetic_energy'].value = 0.5 * self._Grid.integrate(u**2 + v**2, 'all')
-        self.State['potential_energy'].value = 0.5 * self._Grid.integrate(self.State['psi'].value**2, 'all')
+        self.State['potential_energy'].value = 0.5 * self.inv_Rd2 * self._Grid.integrate(self.State['psi'].value**2,
+                                                                                         'all')
         self.State['total_energy'].value = self.State['kinetic_energy'].value + self.State['potential_energy'].value
