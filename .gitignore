@@ -229,3 +229,5 @@ __marimo__/
 *.run.xml
 *.toc
 *.synctex
+*.synctex.gz
+*.bcf-SAVE-ERROR

@@ -1,0 +1,145 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx} % Required for inserting images
+%packages utilisés pour les équations
+\usepackage{mathptmx}
+\usepackage{mathtools}
+\usepackage{mathrsfs}
+\usepackage{amsmath}%Pour équations multi-lignes
+\usepackage{mathbbol}
+\usepackage{envmath}%Pour système d'équations
+\usepackage{esint}
+\usepackage{amsthm}
+\usepackage{appendix}%Pour les annexes
+\usepackage{enumerate}%Pour les énumérations
+\usepackage{hyperref}%Pour les liens
+\usepackage{wrapfig}
+\usepackage[paper=a4paper,hmargin=2cm,vmargin=2cm]{geometry}
+\usepackage[backend=biber,
+bibstyle=apa,citestyle=apa,sorting=anyt]{biblatex}%Pour la biblio C'EST ICI QU'ON MODIFIE LE FORMAT A MODIFIER
+
+\usepackage{csquotes}%pour les citations
+\addbibresource{Biblio.bib}%Pour la biblio
+\usepackage{xspace}%commandes personnalisees
+\usepackage[french,english]{babel}
+\usepackage{lipsum} %Pour tester la mise en page
+\usepackage{subcaption}%placement d'image
+\usepackage{multicol}%
+\usepackage{multirow}%POur écrire du texte sur plusieurs lignes dans un tableau
+%commandes utiles
+
+\numberwithin{equation}{section}%Pour numéroter les équations par section
+
+
+\title{ pyTQG documentation }
+\author{personne30003}
+%\AtBeginDocument{\vspace*{1cm minus 1cm}}
+%\AtEndDocument{\vspace{1cm minus 1cm}}
+\begin{document}
+\selectlanguage{english}
+\section{Models}
+Note : \verb|beta| ($\beta$-plan approcimation) is a common parameter for all models
+\subsection{Barotropic QG (class \texttt|BarotropicQG|)}
+\subsubsection{Equations}
+\begin{align}
+	\left(\frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2}\right) \psi - \frac{\psi}{R_d^2} &= q -\beta y \\
+	\frac{\partial q}{\partial t} &= -\mathrm{J}(\psi, q)
+\end{align}
+$psi$ : streamfunction, $q$ : potential vorticity. Fields variables : 
+\begin{itemize}
+	\item streamfunction : \verb|psi| = $\psi$
+	\item potential vorticity : \verb|PV| = $q$ :
+	\item relative vorticity : \verb|vorticity| = $\zeta = \left(\frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2}\right) \psi = q -\beta y + \frac{\psi}{R_d^2}$
+	  
+\end{itemize}
+\subsubsection{Diagnostics}
+\begin{itemize}
+	\item Total potential vorticity : \verb|PV_total| = $Q = \iint_S q(x, y, t) \mathrm{d}x\mathrm{d}y$
+	\item Kinetic energy : \verb|kinetic_energy| = $E_c = \frac{1}{2} \iint_S \left((\frac{\partial \psi}{\partial x})^2 + (\frac{\partial \psi}{\partial y})^2\right) \mathrm{d}x\mathrm{d}y$
+	\item Enstrophy : \verb|enstrophy| = $Z =\frac{1}{2} \iint_S q^2 \mathrm{d}x\mathrm{d}y$
+\end{itemize}
+\subsubsection{Parameters}
+\begin{itemize}
+	\item Rossby Radius : \verb|inv_Rd2| = $\frac{1}{R_d^2}$
+	\item Mean zonal transport (for zonal channel configuration) : \verb|T_0| = $T_0$
+\end{itemize}
+\subsection{Thermal Quasi-Geostrophic (class \texttt|BarotropicQG|)}
+Formulation based on \cite{Warneford2013}
+\subsubsection{Equations}
+\begin{align}
+	\left(\frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2}\right) \psi - \frac{\psi}{R_d^2} &= q -\frac{\theta}{R_d^2} -\beta y \\
+	\frac{\partial q}{\partial t} &= -\mathrm{J}(\psi, q) + \frac{1}{R_d^2}\mathrm{J}(\psi, \theta) \\
+	\frac{\partial \theta}{\partial t} = -\mathrm{J}(\psi, \theta)
+\end{align}
+$psi$ : streamfunction, $q$ : potential vorticity, $\theta$ : buoyancy. Fields variables : 
+\begin{itemize}
+	\item streamfunction : \verb|psi| = $\psi$
+	\item buoyancy : \verb|theta| = $\theta$
+	\item potential vorticity : \verb|PV| = $q$
+	\item relative vorticity : \verb|vorticity| = $\zeta = \left(\frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2}\right) \psi = q -\beta y + \frac{\psi - \theta}{R_d^2}$
+	
+\end{itemize}
+\subsubsection{Diagnostics}
+\begin{itemize}
+	\item Total potential vorticity : \verb|PV_total| = $Q = \iint_S q(x, y, t) \mathrm{d}x\mathrm{d}y$
+	\item Kinetic energy : \verb|kinetic_energy| = $E_c = \frac{1}{2} \iint_S \left((\frac{\partial \psi}{\partial x})^2 + (\frac{\partial \psi}{\partial y})^2\right) \mathrm{d}x\mathrm{d}y$
+	\item Available potential energy : \verb|potential_energy| = $E_p = \frac{1}{2}\iint_S \frac{\psi^2}{R_d^2}\mathrm{d}x\mathrm{d}y$
+	\item Total energy : \verb|total_energy| = $E = E_c + E_p$
+	\item Total buoyancy : \verb|theta_total| = $\Theta = \iint_S \theta(x, y, t)\mathrm{d}x\mathrm{d}y$
+	\item Enstrophy : \verb|enstrophy| = $Z =\frac{1}{2} \iint_S q^2 \mathrm{d}x\mathrm{d}y$
+\end{itemize}
+
+\subsubsection{Parameters}
+
+\begin{itemize}
+	\item Rossby Radius : \verb|inv_Rd2| = $\frac{1}{R_d^2}$
+	\item Mean zonal transport (for zonal channel configuration) : \verb|T_0| = $T_0$
+\end{itemize}
+
+\subsection{Coupled Thermal Quasi-Geostrophic (class \texttt|BarotropicQG|)}
+\subsubsection{Equations}
+\subsubsection{Diagnostics}
+\subsubsection{Parameters}
+\section{General parameters (class \texttt|Params|)}
+\section{Numeric}
+\section{Time schemes}
+
+We solve ODE like this
+\begin{align}
+	\frac{\mathrm{d}u(t)}{\mathrm{d}t} &= \mathrm{RHS}(u, t)\\
+	u(0) = u^0
+\end{align}
+Time Step is noted $\Delta t$.
+\paragraph{Euler}~\\
+\begin{equation}
+	u^{n+1} = u^n+\Delta t\times \mathrm{RHS}(u^n, t^n)
+\end{equation}
+\paragraph{RK2}~\\
+\begin{align}
+	u^{n+1} &= u^n+\frac{\Delta t}{2}(k_1+k_2)\\
+	k_1 &= \mathrm{RHS}(u^n, t^n)\\
+	k_2 &= \mathrm{RHS}(u^n +\Delta t k_1, t^n+\Delta t)
+\end{align}
+\paragraph{RK4}~\\
+\begin{align}
+	u^{n+1} &= u^n+\frac{\Delta t}{3}(\frac{k_1}{2}+k_2+k_3+\frac{k_4}{2})\\
+	k_1 &= \mathrm{RHS}(u^n, t^n)\\
+	k_2 &= \mathrm{RHS}(u^n +\frac{\Delta t}{2}k_1, t^n+\frac{\Delta t}{2})\\
+	k_3 &= \mathrm{RHS}(u^n+\frac{\Delta t}{2}k_2, t^n+\frac{\Delta t}{2})\\
+	k_4 &= \mathrm{RHS}(u^n+\Delta t k_3, t^n+\Delta t)
+\end{align}
+
+\paragraph{Leap-Frog}~\\
+\begin{align}
+	u^{n+1} = u^{n-1}+2\Delta t \mathrm{RHS}(u^n, t^n)
+\end{align}
+First step is computed with Euler scheme. To remove computationnal mode, we use Asselin filter : 
+\begin{align}
+	u^{n+1} &= u^{n-1}+2\Delta t \mathrm{RHS}(\overline{u^n}, t^n)\\
+	\overline{u^n} &= u^{n} + \alpha(u^{n+1}+2u^n+u^{n-1})\\
+	\alpha &\approx 0.05
+\end{align}
+
+\printbibliography
+\end{document}
