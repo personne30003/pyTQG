@@ -157,6 +157,9 @@ class Grid:
         self.Y.setflags(write = False)
         self.x.setflags(write = False)
         self.y.setflags(write = False)
+
+        self.__dx_min = min(self.__dx, self.__dy)
+
         #Fonctions d'intégration
         self.__int_cum_x = self.__apply_along_axis(self.__int_cum_x_1D, "x")
         self.__int_cum_y = self.__apply_along_axis(self.__int_cum_y_1D, "y")
@@ -291,10 +294,11 @@ class Grid:
         str_out = f"""
 Grid : \n
 Geometry = {self.__geometry}\n
--Size {self.X.shape} \n
--Step : dx = {self.__dx}, dy = {self.__dy}\n
--Intervals : x = {self.__x_bounds}, y = {self.__y_bounds} \n
--DealiasParams : {self.__dealias_params}"""
+- Size {self.X.shape} \n
+- Step : dx = {self.__dx}, dy = {self.__dy}\n
+- Minimal step : {self.__dx_min}\n
+- Intervals : x = {self.__x_bounds}, y = {self.__y_bounds} \n
+- DealiasParams : {self.__dealias_params}"""
         return str_out
 ###########Fonctions privées########################################################
     def __apply_along_axis(self, func, axis):
@@ -354,3 +358,8 @@ Geometry = {self.__geometry}\n
     @property
     def dy(self):
         return self.__dy
+
+    @property
+    def dx_min(self):
+        "pas de grille minimal"
+        return self.__dx_min

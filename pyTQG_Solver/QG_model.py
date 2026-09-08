@@ -74,7 +74,9 @@ class QG_model:
             str_out += f" - {attr} = {getattr(self, attr)}\n"
         str_out += self._EllipticSolver.__repr__()
         return str_out
-
+    def disp_diags(self):
+        str_out = ""
+        return str_out
     def to_NETCDF_attrs(self):
         "Met certains parametres sous forme d'un dictionnaire {nom:valeur}"
         dic_attrs = {'Model' : self._model_name}
@@ -92,3 +94,7 @@ class QG_model:
         if var.shape != self._Grid.X.shape:
             raise ValueError(f"var must be np.ndarray of shape {self._Grid.X.shape}")
         self.State[var].value = value
+
+    def check_init_fields(self):
+        "verifie si les champs ont bien été initialisés"
+        pass

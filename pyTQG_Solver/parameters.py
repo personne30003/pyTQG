@@ -4,7 +4,7 @@ TODO : arreter d'initialiser les paramètres dans la classe, et les mettre dans 
        Comme dans Fluid2d et pyRSW quoi.
 """
 import os
-import sys
+#import sys
 import datetime
 import dealiasing
 import copy
@@ -27,8 +27,11 @@ class Params():
         self.time_scheme='Euler'
         self.max_time=10.0
         self.max_it=1000000
+
         self.max_speed = 50.0#arbitraire, à modifier. Un dépassement de cette valeur engendre l'arret du programme
-        
+        self.cfl = 1.0
+
+
         self.output_path=os.getcwd()
         date = datetime.datetime.now()
         date_frm = date.strftime("%Y:%m:%d-%H:%M:%S")
@@ -37,6 +40,10 @@ class Params():
         self.exp_name = f'Exp_{date_frm}'
         self.exp_dir = os.path.dirname(os.getcwd())#On se place dans le dossier parent. C'est à dire le dossier juste avant le répertoire du module
 
+        self.freq_his  = 0.1
+        self.freq_diag = 0.1
+
+        self.user_attrs = {}#De la forme {key : str, bool, int, float, tuple, list}
     def copy(self):
         return copy.deepcopy(self)
 
@@ -50,14 +57,19 @@ class Params():
         NC_attrs = {}
         dic_dealias = dataclasses.asdict(self.dealias_params)
         dic_dealias['apply_dealias'] = str(dic_dealias['apply_dealias'])
-        for attr, val in self.__dict__.items():
+        dic_attrs_tot = {**self.__dict__, **self.user_attrs}
+        del dic_attrs_tot['user_attrs']
+        for attr, val in dic_attrs_tot.items():
             if val is None:
                 NC_attrs[attr] = 'None'
             if attr == 'dealias_params':
                 continue
+            if type(val) == bool:
+                NC_attrs[attr] = str(val)
             else:
                 NC_attrs[attr] = val
+
         NC_attrs = {**NC_attrs, **dic_dealias}
-        #print(NC_attrs)
+        print(NC_attrs)
         return NC_attrs
         

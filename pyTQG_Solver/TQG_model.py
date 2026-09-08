@@ -48,9 +48,9 @@ class ThermalQG(QG_model.QG_model):
         PV = variable.Variable(name = 'PV',
                                type_var = 'prognostic',
                                field = True)
-        vort = psi = variable.Variable(name='vorticity',
-                                       type_var='diagnostic',
-                                       field=True)
+        vort = variable.Variable(name='vorticity',
+                                 type_var='diagnostic',
+                                 field=True)
         theta = variable.Variable(name = 'theta',
                                   type_var = 'prognostic',
                                   field = True)

@@ -28,25 +28,25 @@ class TimeScheme:
         if params.time_scheme not in self.__SchemeList.keys():
             raise ValueError(f"type must be in {self.__SchemeList.keys()} (value {params.time_scheme})")
             
-        self.scheme_type=params.time_scheme
-        self.operator_scheme=self.__SchemeList[self.scheme_type]
+        self.scheme_type = params.time_scheme
+        self.operator_scheme = self.__SchemeList[self.scheme_type]
 
         self.u=u0.copy() if copy_initial else u0
         #print(f"initialisation u={self.u}")
-        self.rhs=rhs#Attention il s'agit d'une fonction
-        self.t=0.0
-        self.nb_it=0
+        self.rhs = rhs#Attention il s'agit d'une fonction
+        self.t = 0.0
+        self.nb_it = 0
         #paramètres pour schéma LeapFrog
-        self.LeapFrog_init_scheme='Euler'
-        self.LeapFrog_Asselin_coeff=0.05
+        self.LeapFrog_init_scheme = 'Euler'
+        self.LeapFrog_Asselin_coeff = 0.05
         self.LeapFrog_u_old = u0.copy()
         self.LeapFrog_u_f = u0.copy()
         self.LeapFrog_dt_old = None
         self.first_it = True
         
     def Step(self, dt, *args):
-        self.nb_it+=1
-        self.t+=dt
+        self.nb_it += 1
+        self.t += dt
         self.operator_scheme(dt,  *args)
         self.LeapFrog_dt_old = dt
         return self.u

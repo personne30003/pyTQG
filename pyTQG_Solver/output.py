@@ -47,20 +47,21 @@ class Output:
         self.__create_NC_scalars(model)
         self.idx_diag = 0
         self.idx_his = 0
+        self.__Model = model
 
-    def save_diags(self, Model : QG_model.QG_model, t):
+    def save_diags(self, t):
         with nc4.Dataset(self.path_diag, mode='a') as NC_file:
             NC_file.variables['t'][self.idx_diag] = t
-            for scalar_var in Model.State.scalar_vars:
-                NC_file.variables[scalar_var][self.idx_diag] = Model.State.scalar_values[scalar_var]
+            for scalar_var in self.__Model.State.scalar_vars:
+                NC_file.variables[scalar_var][self.idx_diag] = self.__Model.State.scalar_values[scalar_var]
             NC_file.sync()
         self.idx_diag += 1
 
-    def save_his(self, Model : QG_model.QG_model, t):
+    def save_his(self, t):
         with nc4.Dataset(self.path_his, mode = 'a') as NC_file:
             NC_file.variables['t'][self.idx_his] = t
-            for field_var in Model.State.fields_vars :
-                NC_file.variables[field_var][self.idx_his, :, :] = Model.State.fields_values[field_var]
+            for field_var in self.__Model.State.fields_vars :
+                NC_file.variables[field_var][self.idx_his, :, :] = self.__Model.State.fields_values[field_var]
             NC_file.sync()
         self.idx_his +=1
 

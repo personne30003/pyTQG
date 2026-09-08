@@ -37,9 +37,9 @@ class BarotropicQG(QG_model.QG_model):
         PV = variable.Variable(name='PV',
                                type_var='prognostic',
                                field=True)
-        vort = psi = variable.Variable(name='vorticity',
-                                       type_var='diagnostic',
-                                       field=True)
+        vort = variable.Variable(name='vorticity',
+                                 type_var='diagnostic',
+                                 field=True)
         #diagnostics
         kinetic_energy = variable.Variable(name='kinetic_energy',
                                            type_var='diagnostic',
