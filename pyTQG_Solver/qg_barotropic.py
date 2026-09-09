@@ -24,11 +24,11 @@ import numpy as np
 import parameters
 import grid
 import variable
-import QG_model
+import qg_model
 
 
 
-class BarotropicQG(QG_model.QG_model):
+class BarotropicQG(qg_model.QG_model):
     def __init__(self, params : parameters.Params, Grid : grid.Grid):
         super().__init__(params, Grid)
         psi = variable.Variable(name='psi',

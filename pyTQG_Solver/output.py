@@ -14,13 +14,13 @@ import netCDF4 as nc4
 import warnings
 
 import parameters
-import QG_model
+import qg_model
 import grid
 
 class Output:
     def __init__(self,
                  params : parameters.Params,
-                 model : QG_model.QG_model,
+                 model : qg_model.QG_model,
                  grid : grid.Grid,
                  path_output : pathlib.Path):
         self._exp_dir = params.exp_dir
