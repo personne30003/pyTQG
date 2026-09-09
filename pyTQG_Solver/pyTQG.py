@@ -14,7 +14,8 @@ import output
 import time_scheme
 import parameters
 import grid
-
+import logger_tool
+import QG_model
 
 
 class pyTQG:
@@ -22,7 +23,7 @@ class pyTQG:
     def __init__(self,
                  params : parameters.Params,
                  Grid: grid.Grid,
-                 model):
+                 model : QG_model.QG_model):
 
         pass
 

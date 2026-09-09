@@ -270,7 +270,7 @@ class Grid:
         dxA_dyB = dx_A*dy_B
         dyA_dxB = dy_A*dx_B
         if self.__dealias_params.dealias_order == 'after_product' and self.__dealias_params.apply_dealias:
-            dxA_dy_B = self.dealias(dxA_dyB, "all")
+            dxA_dyB = self.dealias(dxA_dyB, "all")
             dyA_dxB = self.dealias(dyA_dxB, "all")
         return dxA_dyB - dyA_dxB
 
@@ -298,7 +298,7 @@ Geometry = {self.__geometry}\n
 - Step : dx = {self.__dx}, dy = {self.__dy}\n
 - Minimal step : {self.__dx_min}\n
 - Intervals : x = {self.__x_bounds}, y = {self.__y_bounds} \n
-- DealiasParams : {self.__dealias_params}"""
+- DealiasParams : {self.__dealias_params}\n"""
         return str_out
 ###########Fonctions privées########################################################
     def __apply_along_axis(self, func, axis):
@@ -363,3 +363,7 @@ Geometry = {self.__geometry}\n
     def dx_min(self):
         "pas de grille minimal"
         return self.__dx_min
+
+    @property
+    def shape(self):
+        return self.X.shape

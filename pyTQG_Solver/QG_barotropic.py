@@ -44,6 +44,14 @@ class BarotropicQG(QG_model.QG_model):
         kinetic_energy = variable.Variable(name='kinetic_energy',
                                            type_var='diagnostic',
                                            field=False)
+        potential_energy = variable.Variable(name='potential_energy',
+                                             type_var='diagnostic',
+                                             field=False)
+
+        total_energy = variable.Variable(name='total_energy',
+                                         type_var='diagnostic',
+                                         field=False)
+
         PV_total = variable.Variable(name='PV_total',
                                      type_var='diagnostic',
                                      field=False)
@@ -55,6 +63,8 @@ class BarotropicQG(QG_model.QG_model):
                                  vort,
                                  PV,
                                  kinetic_energy,
+                                 potential_energy,
+                                 total_energy,
                                  PV_total,
                                  enstrophy)
         self.inv_Rd2 = 0.0
@@ -93,11 +103,12 @@ class BarotropicQG(QG_model.QG_model):
 
 
     def PV_from_psi(self, psi, assign = False):
-        vort = self._Grid.laplacien(psi) - self.inv_Rd2 * psi + self.beta * self._Grid.Y
+        PV = self._Grid.laplacien(psi) - self.inv_Rd2 * psi + self.beta * self._Grid.Y
 
         if assign :
-            self.State['PV'].value = vort
-        return vort
+            self.State['PV'].value = PV
+            self.State['vorticity'] = self.vort_from_PV(PV)
+        return PV
 
     def vort_from_PV(self, PV = None):
         pv = self.State['PV'].value
@@ -110,5 +121,8 @@ class BarotropicQG(QG_model.QG_model):
         u = self._Grid.derivative(self.State['psi'].value, "x")
         v = self._Grid.derivative(self.State['psi'].value, "y")
         self.State['kinetic_energy'].value = 0.5 * self._Grid.integrate(u ** 2 + v ** 2, "all")
+        self.State['potential_energy'].value = 0.5 * self.inv_Rd2 * self._Grid.integrate(self.State['psi'].value ** 2,
+                                                                                         'all')
+        self.State['total_energy'].value = self.State['kinetic_energy'].value + self.State['potential_energy'].value
         self.State['PV_total'].value = self._Grid.integrate(self.State['PV'].value, "all")
         self.State['enstrophy'].value = 0.5 * self._Grid.integrate(self.State['PV'].value ** 2, "all")

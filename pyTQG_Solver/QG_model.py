@@ -74,9 +74,13 @@ class QG_model:
             str_out += f" - {attr} = {getattr(self, attr)}\n"
         str_out += self._EllipticSolver.__repr__()
         return str_out
+
     def disp_diags(self):
-        str_out = ""
+        str_out = f"Model {self._model_name} diagnostics : \n"
+        for diag, val in self.State.scalar_values.items() :
+            str_out += f" - {diag} = {val} \n"
         return str_out
+
     def to_NETCDF_attrs(self):
         "Met certains parametres sous forme d'un dictionnaire {nom:valeur}"
         dic_attrs = {'Model' : self._model_name}
@@ -88,6 +92,7 @@ class QG_model:
             dic_attrs[attr] = attr_value
 
         return dic_attrs
+
     def assign_init_field(self, var, value : np.ndarray):
         if var not in self.State.fields_vars :
             raise ValueError(f"field var must be in {self.State.fields_vars}")
@@ -97,4 +102,8 @@ class QG_model:
 
     def check_init_fields(self):
         "verifie si les champs ont bien été initialisés"
-        pass
+        for field_name, field_value in self.State.fields_values.items() :
+            if type(field_value) is not np.ndarray :
+                raise TypeError(f"field {field_name} must be np.ndarray")
+            if field_value.shape != self._Grid.shape :
+                raise ValueError(f"field {field_name} must have same Grid shape {self._Grid.shape}, not {fiedl_value.shape}")
