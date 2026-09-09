@@ -23,7 +23,7 @@ class ThermalQG_coupled(qg_model.QG_model) :
 
     def PV_from_psi(self, psi, assign = False):
         raise NotImplementedError
-    def U_max(self):
+    def max_speed(self):
         raise NotImplementedError
 
     def compute_diagnostics(self):

@@ -31,6 +31,9 @@ class Params():
         self.max_speed = 50.0#arbitraire, à modifier. Un dépassement de cette valeur engendre l'arret du programme
         self.cfl = 1.0
 
+        self.adaptable_dt = True
+        self.dt = 0.1
+
 
         self.output_path=os.getcwd()
         date = datetime.datetime.now()
@@ -41,7 +44,7 @@ class Params():
         self.exp_dir = os.path.dirname(os.getcwd())#On se place dans le dossier parent. C'est à dire le dossier juste avant le répertoire du module
 
         self.freq_his  = 0.1
-        self.freq_diag = 0.1
+        self.freq_diags = 0.1
 
         self.user_attrs = {}#De la forme {key : str, bool, int, float, tuple, list}
     def copy(self):

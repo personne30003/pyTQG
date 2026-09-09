@@ -35,7 +35,6 @@ class TimeScheme:
         #print(f"initialisation u={self.u}")
         self.rhs = rhs#Attention il s'agit d'une fonction
         self.t = 0.0
-        self.nb_it = 0
         #paramètres pour schéma LeapFrog
         self.LeapFrog_init_scheme = 'Euler'
         self.LeapFrog_Asselin_coeff = 0.05
@@ -93,3 +92,6 @@ class TimeScheme:
     
     def get_Schemes(self) : 
         return tuple(self.__SchemeList.keys())
+
+    def reset_t(self):
+        self.t = 0.0

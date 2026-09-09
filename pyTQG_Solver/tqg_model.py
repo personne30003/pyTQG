@@ -140,7 +140,7 @@ class ThermalQG(qg_model.QG_model):
         vort = pv - self.beta * self._Grid.Y + (self.State['psi'].value - self.State['theta'].value) * self.inv_Rd2
         return vort
 
-    def U_max(self):
+    def max_speed(self):
         u = self._Grid.derivative(self.State['psi'].value, "x")
         v = self._Grid.derivative(self.State['psi'].value, "y")
         U = np.sqrt(u ** 2 + v ** 2)

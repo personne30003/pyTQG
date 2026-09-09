@@ -86,7 +86,7 @@ class BarotropicQG(qg_model.QG_model):
         new_state['vorticity'].value = self.vort_from_PV(new_state['PV'].value)
         return new_state
 
-    def U_max(self):
+    def max_speed(self):
         u = self._Grid.derivative(self.State['psi'].value, "x")
         v = self._Grid.derivative(self.State['psi'].value, "y")
         U = np.sqrt(u ** 2 + v ** 2)

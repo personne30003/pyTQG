@@ -50,7 +50,7 @@ class QG_model:
     def vort_from_PV(self, PV = None):
         raise NotImplementedError
 
-    def U_max(self):
+    def max_speed(self):
         raise NotImplementedError
 
     def compute_diagnostics(self):
