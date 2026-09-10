@@ -134,9 +134,8 @@ class ThermalQG(qg_model.QG_model):
         return vort
 
     def vort_from_PV(self, PV = None):
-        pv = self.State['PV'].value
-        if PV is not None:
-            pv = PV
+        if PV is None:
+            pv = self.State['PV'].value
         vort = pv - self.beta * self._Grid.Y + (self.State['psi'].value - self.State['theta'].value) * self.inv_Rd2
         return vort
 

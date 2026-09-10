@@ -73,6 +73,5 @@ class Params():
                 NC_attrs[attr] = val
 
         NC_attrs = {**NC_attrs, **dic_dealias}
-        print(NC_attrs)
         return NC_attrs
         

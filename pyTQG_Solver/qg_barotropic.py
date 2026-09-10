@@ -92,8 +92,10 @@ class BarotropicQG(qg_model.QG_model):
         U = np.sqrt(u ** 2 + v ** 2)
         return np.max(U)
 
-    def psi_from_PV(self, vort, assign = False):
-        psi = self._EllipticSolver.Solve(vort - self.beta * self._Grid.Y,
+    def psi_from_PV(self, PV = None, assign = False):
+        if PV is None :
+            PV = self.State['PV'].value
+        psi = self._EllipticSolver.Solve(PV - self.beta * self._Grid.Y,
                                          'inv_Rd2',
                                          bc_y_inf=0.0,
                                          bc_y_sup=self.T_0)
@@ -111,11 +113,26 @@ class BarotropicQG(qg_model.QG_model):
         return PV
 
     def vort_from_PV(self, PV = None):
-        pv = self.State['PV'].value
-        if PV is not None:
-            pv = PV
-        vort = pv - self.beta*self._Grid.Y + self.State['psi'].value*self.inv_Rd2
+        if PV is  None:
+            PV =  self.State['PV'].value
+        vort = PV - self.beta*self._Grid.Y + self.State['psi'].value*self.inv_Rd2
         return vort
+
+    def PV_from_vort(self, vort = None, assign = False):
+        if vort is None :
+            vort = self.State['vorticity'].value
+        if vort is not None and assign :
+            self.State['vorticity'].value = vort
+
+        psi = self._EllipticSolver.Solve(vort,
+                                         0.0,
+                                         bc_y_inf = 0.0,
+                                         bc_y_sup = self.T_0)
+        PV = self.PV_from_psi(psi, assign = False)
+        if assign:
+            self.State['PV'].value = PV
+
+        return PV
 
     def compute_diagnostics(self):
         u = self._Grid.derivative(self.State['psi'].value, "x")

@@ -58,6 +58,16 @@ class State:
         for var in self.__liste_prognostic : 
             new_S[var].value = new_S[var].value+other[var].value
         return new_S
+
+    def __iadd__(self, other):
+        if not isinstance(other, State):
+            raise TypeError(f"sum only compatible with State, not {type(other)}")
+
+        self.__check_other(other)
+
+        for var in self.__liste_prognostic :
+            self.__dic_var[var].value += other[var].value
+        return self
         
         
     def __mul__(self, scalar):

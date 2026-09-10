@@ -9,6 +9,8 @@ import pathlib
 import shutil
 import time
 import warnings
+import logging
+import numpy as np
 
 import output
 import time_scheme
@@ -26,20 +28,21 @@ class pyTQG:
                  Model : qg_model.QG_model):
         self.__Grid = Grid
         self.__Model = Model
+        self.__Params = params
 
         self.__exp_dir = pathlib.Path(params.exp_dir)
         self.__exp_name = params.exp_name
         self.__output_dir = self.__exp_dir/self.__exp_name
 
         self.__create_output_folder()
-        self.__copy_script()
+        #self.__copy_script()
 
         self.__Logger = logger_tool.Logger(self.__output_dir/"log.txt")
 
         self.__Logger.print(20 * '#' + 'pyTQG' + 20 * '#')
         self.__Logger.print(45 * '#')
         self.__Logger.print(20 * '#' + 'Params' + 20* '#')
-        self.__Logger.print(self.__Params)
+        self.__Logger.print(params)
         self.__Logger.print(20 * '#' + 'Grid' + 20* '#')
         self.__Logger.print(self.__Grid)
         self.__Logger.print(20 * '#' + 'Model' + 20 * '#')
@@ -88,12 +91,13 @@ class pyTQG:
         self.__Logger.print(f"max speed = {max_speed}, dt = {dt}")
         self.__Logger.print(self.__Model.disp_diags())
         self.__Logger.print("saving fields")
-        self.__Output.save_diags(0.0)
+        self.__Output.save_his(0.0)
         self.__Logger.print("saving diagnostics")
         self.__Output.save_diags(0.0)
         self.__Logger.print(45 * '#')
 
         list_time_it = []
+        t_ini = time.time()
         while (t <= t_max) and not stop:
             t0 = time.time()
             t += dt
@@ -116,18 +120,28 @@ class pyTQG:
 
             if t >= t_diags:
                 t_diags += freq_diags
-                self.__Logger.print("saving fields")
+                self.__Logger.print("saving diags")
                 self.__Output.save_diags(t)
 
-            t_it = time.time() - t0
+            t_tot = time.time()
+            t_it = 1000*(t_tot - t0)#conversion des secondes en ms
             list_time_it.append(t_it)
 
             if max_speed >= self.__max_speed :
                 self.__Logger.print(f"max speed >= {self.__max_speed}, blow-up detected, stopping",
                                     mode = 'error')
                 stop = True
-            self.__Logger(f"iteration done in {t_it} ms")
+            self.__Logger.print(f"iteration done in {t_it} ms")
+            self.__Logger.print(f"time elapsed since the start of the simulation {(t_tot - t_ini)/60} minutes")
             self.__Logger.print(45 * '#')
+
+        t_sim_tot = (time.time() - t_ini)/1000
+        self.__Logger.print(f"time elapsed since the start of the simulation {(t_sim_tot - t_ini)/60} minutes")
+        mean_time_iteration = np.mean(list_time_it)
+        self.__Logger.print(f"mean iteration time : {mean_time_iteration} ms")
+        logging.shutdown()
+        sys.exit(0)
+
 
 
 
@@ -151,11 +165,11 @@ class pyTQG:
             if U_max > 0.0:
                 dt = self.__Params.cfl * self.__Grid.dx_min/U_max
             else :
-                warnings.Warn(f"zero max speed : dt = params.dt_fix = {self.dt_fix}",
+                warnings.Warn(f"zero max speed : dt = params.dt_fix = {self.__dt_fix}",
                               RuntimeWarning)
-                dt = self.dt_fix
+                dt = self.__dt_fix
         else:
-            dt = self.dt_fix
+            dt = self.__dt_fix
         return dt
 
 

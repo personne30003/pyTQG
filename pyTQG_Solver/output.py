@@ -48,6 +48,7 @@ class Output:
         self.idx_diag = 0
         self.idx_his = 0
         self.__Model = model
+        #self.Model = model#Juste pour debug
 
     def save_diags(self, t):
         with nc4.Dataset(self.path_diag, mode='a') as NC_file:
@@ -66,7 +67,7 @@ class Output:
         self.idx_his +=1
 
 
-    def __create_NC_fields(self, model : QG_model.QG_model):
+    def __create_NC_fields(self, model : qg_model.QG_model):
         with nc4.Dataset(self.path_his, mode = 'w', format = 'NETCDF4') as NC_file:
             #Creation dimension
             NC_file.createDimension('x', self.x.size)
@@ -87,7 +88,7 @@ class Output:
             self.__write_nc_attrs(NC_file, self.attrs_Ds)
             NC_file.sync()
 
-    def __create_NC_scalars(self, model : QG_model.QG_model):
+    def __create_NC_scalars(self, model : qg_model.QG_model):
         with nc4.Dataset(self.path_diag, mode = 'w', format = 'NETCDF4') as NC_file:
             NC_file.createDimension('t', None)
             NC_file.createVariable('t', 'f8', ('t', ))

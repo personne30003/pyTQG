@@ -21,7 +21,7 @@ class DealiasParams:
 
     def __post_init__(self):
         if self.dealias_order not in liste_modes_dealias:
-            raise ValueError(f"dealias_order must be str, with value in {liste_modes_dealias}, current value : {liste_mod_dealias}")
+            raise ValueError(f"dealias_order must be str, with value in {liste_modes_dealias}, current value : {liste_modes_dealias}")
 
 
 

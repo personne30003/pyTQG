@@ -50,6 +50,9 @@ class QG_model:
     def vort_from_PV(self, PV = None):
         raise NotImplementedError
 
+    def PV_from_vort(self, vort = None, assign = False):
+        raise NotImplementedError
+
     def max_speed(self):
         raise NotImplementedError
 
@@ -60,6 +63,10 @@ class QG_model:
         "Renvoie la fonction de courant psi(x, y) à partir d'un profil de vitesse zonale u(x, y) = U(y)"
         psi = -self._Grid.int_cum(U, 'y') + constant
         return psi
+
+    def vort_from_U(self, U : np.ndarray):
+        "Calcule la vorticité à partir d'un champ de vitesse zonale U"
+        return -self._Grid.derivative(U, 'y', order = 1, BC_Dirichlet = False)
 
     def __repr__(self):
         str_out = f"Model : {self._model_name} \n"
@@ -106,4 +113,4 @@ class QG_model:
             if type(field_value) is not np.ndarray :
                 raise TypeError(f"field {field_name} must be np.ndarray")
             if field_value.shape != self._Grid.shape :
-                raise ValueError(f"field {field_name} must have same Grid shape {self._Grid.shape}, not {fiedl_value.shape}")
+                raise ValueError(f"field {field_name} must have same Grid shape {self._Grid.shape}, not {field_value.shape}")

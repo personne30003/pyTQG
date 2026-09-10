@@ -39,7 +39,17 @@ bibstyle=apa,citestyle=apa,sorting=anyt]{biblatex}%Pour la biblio C'EST ICI QU'O
 \begin{document}
 \selectlanguage{english}
 \section{Models}
-Note : \verb|beta| ($\beta$-plan approcimation) is a common parameter for all models
+\verb|BarotropicQG|, \verb|ThermalQG|, and \verb|ThermalQG_coupled| classes are instances of the parent class \verb|QG_model|. Their methods are therefore similar. \verb|beta| ($\beta$-plan approcimation) is the only common attributes.
+\subsection{Common functions and attributes}
+\begin{itemize}
+	\item \verb|psi_from_PV(PV, assign = False)|
+	\item \verb|PV_from_psi(psi, assign = False)|
+	\item \verb|vort_from_PV(PV=None)|
+	\item \verb|PV_from_vort(vort = None, assign = False)|
+	\item \verb|psi_from_U(U, constant = 0.0)|
+	\item \verb|vort_from_U(U)|
+\end{itemize}
+
 \subsection{Barotropic QG (class \texttt|BarotropicQG|)}
 \subsubsection{Equations}
 \begin{align}
@@ -57,6 +67,8 @@ $psi$ : streamfunction, $q$ : potential vorticity. Fields variables :
 \begin{itemize}
 	\item Total potential vorticity : \verb|PV_total| = $Q = \iint_S q(x, y, t) \mathrm{d}x\mathrm{d}y$
 	\item Kinetic energy : \verb|kinetic_energy| = $E_c = \frac{1}{2} \iint_S \left((\frac{\partial \psi}{\partial x})^2 + (\frac{\partial \psi}{\partial y})^2\right) \mathrm{d}x\mathrm{d}y$
+	\item Available potential energy : \verb|potential_energy| = $E_p = \frac{1}{2}\iint_S \frac{\psi^2}{R_d^2}\mathrm{d}x\mathrm{d}y$
+	\item Total energy : \verb|total_energy| = $E = E_c + E_p$
 	\item Enstrophy : \verb|enstrophy| = $Z =\frac{1}{2} \iint_S q^2 \mathrm{d}x\mathrm{d}y$
 \end{itemize}
 \subsubsection{Parameters}
@@ -64,7 +76,7 @@ $psi$ : streamfunction, $q$ : potential vorticity. Fields variables :
 	\item Rossby Radius : \verb|inv_Rd2| = $\frac{1}{R_d^2}$
 	\item Mean zonal transport (for zonal channel configuration) : \verb|T_0| = $T_0$
 \end{itemize}
-\subsection{Thermal Quasi-Geostrophic (class \texttt|BarotropicQG|)}
+\subsection{Thermal Quasi-Geostrophic (class \texttt{ThermalQG})}
 Formulation based on \cite{Warneford2013}
 \subsubsection{Equations}
 \begin{align}
@@ -97,11 +109,11 @@ $psi$ : streamfunction, $q$ : potential vorticity, $\theta$ : buoyancy. Fields v
 	\item Mean zonal transport (for zonal channel configuration) : \verb|T_0| = $T_0$
 \end{itemize}
 
-\subsection{Coupled Thermal Quasi-Geostrophic (class \texttt|BarotropicQG|)}
+\subsection{Coupled Thermal Quasi-Geostrophic (class \texttt{ThermalQG\_coupled})}
 \subsubsection{Equations}
 \subsubsection{Diagnostics}
 \subsubsection{Parameters}
-\section{General parameters (class \texttt|Params|)}
+\section{General parameters (class \texttt{Params})}
 \section{Numeric}
 \section{Time schemes}
 
