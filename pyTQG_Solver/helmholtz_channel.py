@@ -48,7 +48,12 @@ class HelmholtzChannel:
         self.D2 = chebyshev.Cheb_mat(self.Ny, a = y_bounds[0], b=y_bounds[-1], Dirichlet_BC = False, M=2)
         self.__dic_alpha2 = {}
 
-    def Solve(self, rhs, alpha2, bc_y_inf=0.0, bc_y_sup=0.0, real = True):
+    def Solve(self,
+              rhs,
+              alpha2,
+              bc_y_inf=0.0,
+              bc_y_sup=0.0,
+              real = True):
         "Doc ..."
         #Vérifications usuelles
         if np.isscalar(rhs) : 

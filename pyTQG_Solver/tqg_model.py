@@ -139,6 +139,22 @@ class ThermalQG(qg_model.QG_model):
         vort = pv - self.beta * self._Grid.Y + (self.State['psi'].value - self.State['theta'].value) * self.inv_Rd2
         return vort
 
+    def PV_from_vort(self, vort = None, assign = False):
+        if vort is None :
+            vort = self.State['vorticity'].value
+        if vort is not None and assign :
+            self.State['vorticity'].value = vort
+
+        psi = self._EllipticSolver.Solve(vort,
+                                         0.0,
+                                         bc_y_inf = 0.0,
+                                         bc_y_sup = self.T_0)
+        PV = self.PV_from_psi(psi, assign = False)
+        if assign:
+            self.State['PV'].value = PV
+
+        return PV
+
     def max_speed(self):
         u = self._Grid.derivative(self.State['psi'].value, "x")
         v = self._Grid.derivative(self.State['psi'].value, "y")

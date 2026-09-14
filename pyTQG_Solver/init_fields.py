@@ -5,9 +5,9 @@ Pour le moment, j'ai juste mis des fonctions pour les jets ...
 
 import numpy as np
 
-def BickleyJet(y, gamma, U0=1.0):
-    "Jet de Bickley, de largeur gamma et de valeur max U0 (en y=0)"
-    return U0*(np.cosh(y/gamma))**(-2.0)
+def BickleyJet(y, gamma, U0=1.0, y0 = 0.0):
+    "Jet de Bickley, de largeur gamma et de valeur max U0 (en y=0), centré en y0"
+    return U0*(np.cosh((y - y0)/gamma))**(-2.0)
 
 def UniformJet(y, U0):
     "Jet uniforme d'amplitude U0 (c'est pas assez explicite ?)"

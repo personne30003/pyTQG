@@ -83,7 +83,6 @@ class BarotropicQG(qg_model.QG_model):
                                                      state['PV'].value,
                                                      BC_A=False,
                                                      BC_B=False)
-        new_state['vorticity'].value = self.vort_from_PV(new_state['PV'].value)
         return new_state
 
     def max_speed(self):
@@ -118,6 +117,12 @@ class BarotropicQG(qg_model.QG_model):
         vort = PV - self.beta*self._Grid.Y + self.State['psi'].value*self.inv_Rd2
         return vort
 
+    def vort_from_psi(self, psi = None):
+        if psi is None :
+            psi = self.State['psi'].value
+        vort = self._Grid.laplacien(psi, BC = False)
+        return vort
+
     def PV_from_vort(self, vort = None, assign = False):
         if vort is None :
             vort = self.State['vorticity'].value
@@ -128,7 +133,7 @@ class BarotropicQG(qg_model.QG_model):
                                          0.0,
                                          bc_y_inf = 0.0,
                                          bc_y_sup = self.T_0)
-        PV = self.PV_from_psi(psi, assign = False)
+        PV = vort - psi*self.inv_Rd2 + self.beta*self._Grid.Y
         if assign:
             self.State['PV'].value = PV
 
@@ -137,6 +142,9 @@ class BarotropicQG(qg_model.QG_model):
     def compute_diagnostics(self):
         u = self._Grid.derivative(self.State['psi'].value, "x")
         v = self._Grid.derivative(self.State['psi'].value, "y")
+        self.State['psi'].value = self.psi_from_PV()
+        self.State['vorticity'].value = self._Grid.laplacien(self.State['psi'].value, BC = False)
+
         self.State['kinetic_energy'].value = 0.5 * self._Grid.integrate(u ** 2 + v ** 2, "all")
         self.State['potential_energy'].value = 0.5 * self.inv_Rd2 * self._Grid.integrate(self.State['psi'].value ** 2,
                                                                                          'all')

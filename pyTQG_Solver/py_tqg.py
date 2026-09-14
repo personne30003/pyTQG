@@ -35,7 +35,7 @@ class pyTQG:
         self.__output_dir = self.__exp_dir/self.__exp_name
 
         self.__create_output_folder()
-        #self.__copy_script()
+        self.__copy_script()
 
         self.__Logger = logger_tool.Logger(self.__output_dir/"log.txt")
 
@@ -135,8 +135,8 @@ class pyTQG:
             self.__Logger.print(f"time elapsed since the start of the simulation {(t_tot - t_ini)/60} minutes")
             self.__Logger.print(45 * '#')
 
-        t_sim_tot = (time.time() - t_ini)/1000
-        self.__Logger.print(f"time elapsed since the start of the simulation {(t_sim_tot - t_ini)/60} minutes")
+        t_sim_tot = time.time() - t_ini
+        self.__Logger.print(f"time elapsed since the start of the simulation {t_sim_tot/60} minutes")
         mean_time_iteration = np.mean(list_time_it)
         self.__Logger.print(f"mean iteration time : {mean_time_iteration} ms")
         logging.shutdown()
@@ -155,9 +155,9 @@ class pyTQG:
         self.__output_dir.mkdir(parents = False, exist_ok = False)
 
     def __copy_script(self):
-        name_script = pathlib.Path(__file__).name
-        current_directory = pathlib.Path.cwd()
-        shutil.copy(current_directory/name_script,
+        name_script = pathlib.Path(sys.argv[0])
+        dir_script = name_script.resolve()
+        shutil.copy(dir_script,
                     self.__output_dir/name_script)
 
     def __estimate_dt(self, U_max):
