@@ -73,13 +73,13 @@ class Grid:
 
             #fonctions 1D
             self.__dealias_x = lambda xx : dealiasing.Fourier_dealias(xx,
-                                                                         self.__dx,
-                                                                         coeff_dealias = self.__dealias_params.dealias_Fourier_coeff,
-                                                                         axis = 'x')
+                                                                      self.__dx,
+                                                                      coeff_dealias = self.__dealias_params.Fourier_coeff,
+                                                                      axis = 'x')
             self.__dealias_y = lambda yy : dealiasing.Fourier_dealias(yy,
-                                                                         self.__dy,
-                                                                         coeff_dealias = self.__dealias_params.dealias_Fourier_coeff,
-                                                                         axis = 'y')
+                                                                      self.__dy,
+                                                                      coeff_dealias = self.__dealias_params.Fourier_coeff,
+                                                                      axis = 'y')
 
             self.__int_weight_x = self.__dx
             self.__int_weight_y = self.__dy
@@ -130,14 +130,14 @@ class Grid:
             self.__d2y_1D_BC = lambda yy : yy @ self.__D2y_BC
 
             self.__dealias_x = lambda xx : dealiasing.Fourier_dealias(xx,
-                                                                         self.__dx,
-                                                                         coeff_dealias = self.__dealias_params.dealias_Fourier_coeff,
-                                                                         axis = 'x')
+                                                                      self.__dx,
+                                                                      coeff_dealias = self.__dealias_params.Fourier_coeff,
+                                                                      axis = 'x')
             
             self.__dealias_y = lambda yy : dealiasing.exp_filter_DCT(yy,
-                                                                        alpha = self.__dealias_params.dealias_exp_alpha,
-                                                                        p = self.__dealias_params.dealias_exp_p,
-                                                                        axis = 'y')
+                                                                     alpha = self.__dealias_params.exp_alpha,
+                                                                     p = self.__dealias_params.exp_p,
+                                                                     axis = 'y')
             
             self.__int_x = lambda xx : fourier.Fourier_quad(xx, self.__int_weight_x, axis = 'x')
             self.__int_y = lambda yy : chebyshev.Cheb_quad(yy, weights = self.__int_weight_y, axis = 'y')

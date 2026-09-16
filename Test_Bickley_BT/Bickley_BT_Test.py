@@ -23,7 +23,7 @@ import init_fields
 ###########Paramètres généraux##############
 params = parameters.Params()
 
-params.exp_name = 'test_bickley_w_transport'
+params.exp_name = 'test_bickley_w_transport_dealias'
 params.exp_dir = os.getcwd()
 
 params.Nx = 128
@@ -32,7 +32,7 @@ params.x_bounds = (0.0, 2.0 * np.pi)
 params.y_bounds = (-1.0, 1.0)
 params.geometry = 'zonal_channel'
 
-params.dealias_params.apply_dealias = False
+params.dealias_params.apply_dealias = True
 
 params.max_speed = 25.0
 

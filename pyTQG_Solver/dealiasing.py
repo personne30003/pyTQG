@@ -3,7 +3,7 @@ Quelque fonctions liées au déaliasing :
 -Règle des 2/3 (Orszag et al) pour Fourier
 -Filtre exponentiel pour la base de Chebyshev. Le filtre est appliqué sur les coefficients, calculés par DCT
 
-Ces fonctions ne s'appliquent que sur des vecteurs 1D (comme toutes les fonctions bas-niveau)
+Ces fonctions ne s'appliquent que sur des tableaux 2D
 """
 import numpy as np
 import scipy
@@ -15,9 +15,9 @@ liste_modes_dealias = ('after_product', 'after_derivative')
 class DealiasParams:
     apply_dealias : bool = False
     dealias_order : str = 'after_product'#valeurs possibles "after_product", "after_derivative"
-    dealias_Fourier_coeff : float = 2.0/3.0
-    dealias_exp_alpha : float = 100.0
-    dealias_exp_p : float = 8.0
+    Fourier_coeff : float = 2.0/3.0
+    exp_alpha : float = 100.0
+    exp_p : float = 8.0
 
     def __post_init__(self):
         if self.dealias_order not in liste_modes_dealias:
@@ -49,7 +49,7 @@ def Fourier_dealias(v, dx, coeff_dealias=2.0/3.0, real = True, axis = None):
 
     kx_max = np.abs(kx).max()
     v_hat = scipy.fft.fft(v, axis = axis)
-    v_hat_dealias = np.where(np.abs(kx) < coeff_dealias*kx_max, v_hat, 0.0)#TODO : adapter ça pour une FFT 2D
+    v_hat_dealias = np.where(np.abs(kx) < coeff_dealias*kx_max, v_hat, 0.0)
     v_dealias = scipy.fft.ifft(v_hat_dealias, axis = axis)
 
     if real : 

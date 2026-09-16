@@ -10,12 +10,12 @@ import variable
 import copy
 import numpy as np
 import collections
-import operator as op
+
 
 class State:
     def __init__(self):
-        self.__dic_var = {}#Dictionnaire de la forme {var.name : var}
-        #liste de clés
+        self.__dic_var = {}# Dictionnaire de la forme {var.name : var}
+        # liste de clés
         self.__liste_vars = []
 
     def add_variables(self, *args):
@@ -29,7 +29,7 @@ class State:
                 raise ValueError(f"*args must be Variable.Variable, not {type(var)}")
             self.__dic_var[var.name] = var.copy()
 
-            #On vérifie si la variable est déjà dans la liste
+
             if var.name in self.__liste_vars:
                 raise ValueError(f"var {var.name} already in State {self.__liste_vars}")
 
@@ -38,7 +38,7 @@ class State:
     def del_variables(self, *args):
         if len(args) < 1:
             raise ValueError("there must be 1 or more variables to delete")
-        #On verifie que toutes les valeurs sont dans la liste de variables
+
         if not set(args).issubset(self.__liste_vars) :
             raise ValueError(f"{args} must be in {self.__liste_vars}")
 

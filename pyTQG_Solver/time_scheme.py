@@ -70,15 +70,15 @@ class TimeScheme:
         #return self.u
         
     def LeapFrog(self, dt,*args):
-        "Attention quand copy_initial = False, ici nous faisons plein de copies"
+        "Attention quand copy_initial = False, ici nous faisons plein de copies ; Edit ça doit marcher maintenant (14/09)"
         if self.first_it:
             #print("first it")
-            self.__SchemeList[self.LeapFrog_init_scheme](dt,*args)#u_1
+            self.__SchemeList[self.LeapFrog_init_scheme](dt,*args)# u_1
             #self.RK2(dt, *args)
             self.first_it = False
         else :
             #Pas valide si pas de temps non uniforme (c'est le cas dans mon solveur)
-            u_new=self.LeapFrog_u_old + 2.0*dt*self.rhs(self.u, self.t - self.LeapFrog_dt_old, *args)#u_n+1
+            u_new=self.LeapFrog_u_old + 2.0*dt*self.rhs(self.u, self.t - self.LeapFrog_dt_old, *args)# u_n+1
             
             #Application d'un filtre d'Asselin
             self.LeapFrog_u_f = self.u + self.LeapFrog_Asselin_coeff*(u_new + self.LeapFrog_u_old - 2.0 * self.u)
