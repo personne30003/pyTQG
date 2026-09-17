@@ -23,7 +23,7 @@ import init_fields
 ###########Paramètres généraux##############
 params = parameters.Params()
 
-params.exp_name = 'test_bickley_w_transport_dealias'
+params.exp_name = 'test_bickley_w_transport_dealias_LF'
 params.exp_dir = os.getcwd()
 
 params.Nx = 128
@@ -36,7 +36,7 @@ params.dealias_params.apply_dealias = True
 
 params.max_speed = 25.0
 
-params.time_scheme = 'RK4'
+params.time_scheme = 'LeapFrog'
 params.adaptable_dt = True
 params.cfl = 1.0
 

@@ -261,7 +261,7 @@ class Grid:
         dx_B = getattr(self.__liste_deriv_x, key_BC_B)(val_B)
         dy_B = getattr(self.__liste_deriv_y, key_BC_B)(val_B)
         
-        if self.__dealias_params.dealias_order == 'before_product' and self.__dealias_params.apply_dealias:
+        if self.__dealias_params.dealias_order == 'after_derivative' and self.__dealias_params.apply_dealias:
             dx_A = self.dealias(dx_A, "x")
             dx_B = self.dealias(dx_B, "x")
             dy_A = self.dealias(dy_A, "y")

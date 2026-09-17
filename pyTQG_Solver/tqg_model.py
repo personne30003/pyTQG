@@ -110,7 +110,7 @@ class ThermalQG(qg_model.QG_model):
 
         new_State['PV'].value = -jac_psi_PV + self.inv_Rd2 * jac_psi_theta_PV
         new_State['theta'].value = -jac_psi_theta_buo
-        new_State['vort'].value = self.vort_from_PV(new_State['PV'].value)
+        #new_State['vort'].value = self.vort_from_PV(new_State['PV'].value)
 
         return new_State
 
@@ -135,8 +135,8 @@ class ThermalQG(qg_model.QG_model):
 
     def vort_from_PV(self, PV = None):
         if PV is None:
-            pv = self.State['PV'].value
-        vort = pv - self.beta * self._Grid.Y + (self.State['psi'].value - self.State['theta'].value) * self.inv_Rd2
+            PV = self.State['PV'].value
+        vort = PV - self.beta * self._Grid.Y + (self.State['psi'].value - self.State['theta'].value) * self.inv_Rd2
         return vort
 
     def PV_from_vort(self, vort = None, assign = False):
@@ -162,6 +162,8 @@ class ThermalQG(qg_model.QG_model):
         return np.max(U)
 
     def compute_diagnostics(self):
+        self.State['psi'].value = self.psi_from_PV(self.State['PV'].value, theta = self.State['theta'].value, assign = False)
+        self.State['vorticity'] = self._Grid.laplacien(self.State['psi'].value, BC = False)
         self.State['PV_total'].value = self._Grid.integrate(self.State['PV'].value, 'all')
         self.State['enstrophy'].value = 0.5 * self._Grid.integrate(self.State['PV'].value**2, 'all')
         self.State['theta_total'].value = self._Grid.integrate(self.State['theta'].value, 'all')

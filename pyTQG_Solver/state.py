@@ -48,6 +48,11 @@ class State:
                 del self.__dic_var[var_i]
         self.__liste_vars = list(self.__dic_var.keys())
 
+    def assign_fields_prognostic(self, other):
+        self.__check_other(other)
+        for var in self.prognostics_vars :
+            self.__dic_var[var].value[:] = other[var].value
+
 
 ########Operateurs mathématiques#########################
     def __add__(self, other):

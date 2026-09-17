@@ -22,6 +22,7 @@ Du coup les implémentations deviennent moins explicites ...
 
 import parameters
 import numpy as np
+import state
 
 
 class TimeScheme:
@@ -61,7 +62,14 @@ class TimeScheme:
         
     def Step(self, dt, *args):
         self.t += dt
-        self.operator_scheme(dt,  *args)
+        if self.scheme_type == 'LeapFrog' and not self.first_it :
+            u = self.LeapFrog(dt, *args)
+            if type(self.u) == state.State :
+                self.u.assign_fields_prognostic(u)
+            else :
+                self.u = u
+        else :
+            self.operator_scheme(dt,  *args)
         self.LeapFrog_dt_old = dt
         return self.u
         
@@ -83,7 +91,9 @@ class TimeScheme:
             #Application d'un filtre d'Asselin
             self.LeapFrog_u_f = self.u + self.LeapFrog_Asselin_coeff*(u_new + self.LeapFrog_u_old - 2.0 * self.u)
             self.LeapFrog_u_old = self.LeapFrog_u_f.copy()
-            self.u = u_new.copy()
+            #return u_new
+            #self.u = u_new.copy()
+            return u_new
         #self.LeapFrog_u_nm1 = u_n
         #return self.u
      

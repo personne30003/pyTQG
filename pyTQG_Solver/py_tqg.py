@@ -132,11 +132,13 @@ class pyTQG:
                                     mode = 'error')
                 stop = True
             self.__Logger.print(f"iteration done in {t_it} ms")
-            self.__Logger.print(f"time elapsed since the start of the simulation {(t_tot - t_ini)/60} minutes")
+
+            tps_since_start = (t_tot - t_ini)
+            self.__Logger.print(f"time elapsed since the start of the simulation {tps_since_start //60}:{tps_since_start%60 : .4f} minutes")
             self.__Logger.print(45 * '#')
 
         t_sim_tot = time.time() - t_ini
-        self.__Logger.print(f"time elapsed since the start of the simulation {t_sim_tot/60} minutes")
+        self.__Logger.print(f"time elapsed since the start of the simulation {t_sim_tot//60}:{t_sim_tot %60 : .4f} minutes")
         mean_time_iteration = np.mean(list_time_it)
         self.__Logger.print(f"mean iteration time : {mean_time_iteration} ms")
         logging.shutdown()
