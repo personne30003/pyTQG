@@ -69,9 +69,9 @@ class BarotropicQG(qg_model.QG_model):
                                  enstrophy)
         self.inv_Rd2 = 0.0
         self.T_0 = 0.0  #Transport moyen (en configuration canal)
+        self.visc2 = 0.0# ajout d'un terme en nu\delta q
         self._model_name = 'BarotropicQG'
-
-        self._liste_NC_attrs += ['inv_Rd2', 'T_0']
+        self._liste_NC_attrs += ['inv_Rd2', 'T_0', 'visc2']
 
         self._EllipticSolver.alpha2 = ('inv_Rd2', self.inv_Rd2)
 
@@ -79,10 +79,11 @@ class BarotropicQG(qg_model.QG_model):
     def RHS(self, state, t):
         new_state = state.copy()
         new_state['psi'].value = self.psi_from_PV(state['PV'].value)
-        new_state['PV'].value = -self._Grid.jacobien(new_state['psi'].value,
+        new_state['PV'].value = (-self._Grid.jacobien(new_state['psi'].value,
                                                      state['PV'].value,
                                                      BC_A=False,
-                                                     BC_B=False)
+                                                     BC_B=False) +
+                                 self.visc2 * self._Grid.laplacien(state['PV'].value, BC = False))
         return new_state
 
     def max_speed(self):

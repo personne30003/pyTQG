@@ -1,4 +1,4 @@
-######Juste pour les tests, après ce sera intégré dans l'environnement##########
+#####Juste pour les tests, après ce sera intégré dans l'environnement##########
 from pathlib import Path
 import sys
 
@@ -17,19 +17,19 @@ import os
 import py_tqg
 import parameters
 import grid
-import qg_barotropic
+import tqg_model
 import init_fields
 
 ###########Paramètres généraux##############
 params = parameters.Params()
 
-params.exp_name = 'test_bickley_visc2'
+params.exp_name = 'uniform_Jet_TQG'
 params.exp_dir = os.getcwd()
 
 params.Nx = 128
 params.Ny = 128
 params.x_bounds = (0.0, 2.0 * np.pi)
-params.y_bounds = (-1.0, 1.0)
+params.y_bounds = (0.0, 1.0)
 params.geometry = 'zonal_channel'
 
 params.dealias_params.apply_dealias = True
@@ -55,32 +55,34 @@ Grid = grid.Grid(params)
 
 
 ###########Modèle###########################
-QG_BT = qg_barotropic.BarotropicQG(params, Grid)
+TQG = tqg_model.ThermalQG(params, Grid)
 
-QG_BT.inv_Rd2 = 0.0#dynamique purement barotrope
-QG_BT.T_0 = 1.0
-QG_BT.beta = 0.0
+TQG.inv_Rd2 = 1.0
+TQG.beta = 0.0
 
-#Jet de Bickley de largeur gamma et de vitesse max U0
-#Rappel : U(y) = U0 * sech^2(y/gamma)
-U_ini = init_fields.BickleyJet(Grid.Y,
-                               0.2,
-                               U0 = 1.0)
+############Jet uniforme soumis à un gradient méridional de température
+U0 = 1.0
+U_ini = U0*np.ones(Grid.shape)
+psi_ini = -U_ini*Grid.Y
+
+TQG.T_0 = -U_ini * 1.0
+
+alpha = -1.0
+theta_ini = alpha * Grid.Y+2.0
 
 ############Réglage de la viscosité numérique################
-u_max = 0.01
-#QG_BT.visc2 = 2.0*u_max * Grid.dx_min
-QG_BT.visc2 = 4.0e-9
+TQG.visc2_q = 4.0e-9
+TQG.visc2_theta = TQG.visc2_q
 ##############################################################
 
 
 #Initialisation du modèle#
-rel_vort  = QG_BT.vort_from_U(U_ini)
+rel_vort  = TQG.vort_from_U(U_ini)
 #perturbation aléatoire
 rel_vort = rel_vort + np.random.uniform(low = -0.1, high = 0.1, size = Grid.shape)
 
-QG_BT.PV_from_vort(rel_vort, assign = True)
-QG_BT.psi_from_PV(assign = True)
+TQG.PV_from_vort(vort = np.zeros_like(Grid.Y), theta = theta_ini, assign = True)
+TQG.psi_from_PV(assign = True)
 
 ###########Boucle principale################
 PyTQG = py_tqg.pyTQG(params, Grid, QG_BT)

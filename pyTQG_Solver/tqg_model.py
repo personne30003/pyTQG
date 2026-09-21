@@ -85,9 +85,11 @@ class ThermalQG(qg_model.QG_model):
 
         self.inv_Rd2 = 0.0
         self.T_0 = 0.0  # Transport moyen (en configuration canal)
+        self.visc2_q = 0.0
+        self.visc2_theta = 0.0
         self._model_name = 'Thermal_QG'
 
-        self._liste_NC_attrs += ['inv_Rd2', 'T_0']
+        self._liste_NC_attrs += ['inv_Rd2', 'T_0', 'visc2_q', 'visc2_theta']
 
         self._EllipticSolver.alpha2 = ('inv_Rd2', self.inv_Rd2)
 
@@ -108,9 +110,11 @@ class ThermalQG(qg_model.QG_model):
                                                 BC_A = False,
                                                 BC_B = True)#apparait dans conservation de la flottabilité
 
-        new_State['PV'].value = -jac_psi_PV + self.inv_Rd2 * jac_psi_theta_PV
-        new_State['theta'].value = -jac_psi_theta_buo
-        #new_State['vort'].value = self.vort_from_PV(new_State['PV'].value)
+        new_State['PV'].value = (-jac_psi_PV + self.inv_Rd2 * jac_psi_theta_PV+
+                                 self.visc2_q*self._Grid.laplacien(state['PV'].value, BC = False))
+        new_State['theta'].value = (-jac_psi_theta_buo+
+                                    self.visc2_theta*self._Grid.laplacien(state["theta"].value, BC = True))
+        new_State['vort'].value = self.vort_from_PV(new_State['PV'].value)
 
         return new_State
 
@@ -128,28 +132,34 @@ class ThermalQG(qg_model.QG_model):
     def PV_from_psi(self, psi, theta = None, assign = False):
         if theta is None:
             theta = self.State['theta'].value.copy()
-        vort = self._Grid.laplacien(psi) - (psi - theta)*self.inv_Rd2 + self.beta * self._Grid.Y
+        PV = self._Grid.laplacien(psi) - (psi - theta)*self.inv_Rd2 + self.beta * self._Grid.Y
         if assign:
-            self.State['PV'] = vort
-        return vort
+            self.State['PV'] = PV
+        return PV
 
-    def vort_from_PV(self, PV = None):
+    def vort_from_PV(self, PV = None, psi = None, theta = None):
         if PV is None:
             PV = self.State['PV'].value
-        vort = PV - self.beta * self._Grid.Y + (self.State['psi'].value - self.State['theta'].value) * self.inv_Rd2
+        if psi is None :
+            psi = self.State['psi'].value
+        if theta is None:
+            theta = self.State['theta'].value
+        vort = PV - self.beta * self._Grid.Y + (psi - theta) * self.inv_Rd2
         return vort
 
-    def PV_from_vort(self, vort = None, assign = False):
+    def PV_from_vort(self, vort = None, theta = None, assign = False):
         if vort is None :
             vort = self.State['vorticity'].value
         if vort is not None and assign :
             self.State['vorticity'].value = vort
+        if theta is not None and assign :
+            self.State['theta'].value = theta
 
         psi = self._EllipticSolver.Solve(vort,
                                          0.0,
                                          bc_y_inf = 0.0,
                                          bc_y_sup = self.T_0)
-        PV = self.PV_from_psi(psi, assign = False)
+        PV = self.PV_from_psi(psi, theta = theta, assign = False)
         if assign:
             self.State['PV'].value = PV
 
