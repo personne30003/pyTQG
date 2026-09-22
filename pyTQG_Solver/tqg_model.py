@@ -114,13 +114,14 @@ class ThermalQG(qg_model.QG_model):
                                  self.visc2_q*self._Grid.laplacien(state['PV'].value, BC = False))
         new_State['theta'].value = (-jac_psi_theta_buo+
                                     self.visc2_theta*self._Grid.laplacien(state["theta"].value, BC = True))
-        new_State['vort'].value = self.vort_from_PV(new_State['PV'].value)
 
         return new_State
 
-    def psi_from_PV(self, q, theta = None, assign = False):
+    def psi_from_PV(self, q = None, theta = None, assign = False):
         if theta is None :
             theta = self.State['theta'].value.copy()
+        if q is None:
+            q = self.State['PV'].value.copy()
         psi = self._EllipticSolver.Solve(q - theta * self.inv_Rd2 - self.beta * self._Grid.Y,
                                          'inv_Rd2',
                                          bc_y_inf=0.0,

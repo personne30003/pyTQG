@@ -23,7 +23,7 @@ import init_fields
 ###########Paramètres généraux##############
 params = parameters.Params()
 
-params.exp_name = 'uniform_Jet_TQG'
+params.exp_name = 'uniform_Jet_TQG3'
 params.exp_dir = os.getcwd()
 
 params.Nx = 128
@@ -57,7 +57,7 @@ Grid = grid.Grid(params)
 ###########Modèle###########################
 TQG = tqg_model.ThermalQG(params, Grid)
 
-TQG.inv_Rd2 = 1.0
+TQG.inv_Rd2 = 1.0e-2
 TQG.beta = 0.0
 
 ############Jet uniforme soumis à un gradient méridional de température
@@ -65,10 +65,13 @@ U0 = 1.0
 U_ini = U0*np.ones(Grid.shape)
 psi_ini = -U_ini*Grid.Y
 
-TQG.T_0 = -U_ini * 1.0
+TQG.T_0 = -U0 * 1.0
 
-alpha = -1.0
+alpha = -20.0
 theta_ini = alpha * Grid.Y+2.0
+
+params.user_attrs = {'U0' : U0, 'grad_theta' : alpha}
+
 
 ############Réglage de la viscosité numérique################
 TQG.visc2_q = 4.0e-9
@@ -78,12 +81,13 @@ TQG.visc2_theta = TQG.visc2_q
 
 #Initialisation du modèle#
 rel_vort  = TQG.vort_from_U(U_ini)
+print(f"rel_vort = {rel_vort}")
 #perturbation aléatoire
 rel_vort = rel_vort + np.random.uniform(low = -0.1, high = 0.1, size = Grid.shape)
 
-TQG.PV_from_vort(vort = np.zeros_like(Grid.Y), theta = theta_ini, assign = True)
+TQG.PV_from_vort(vort = rel_vort, theta = theta_ini, assign = True)
 TQG.psi_from_PV(assign = True)
 
 ###########Boucle principale################
-PyTQG = py_tqg.pyTQG(params, Grid, QG_BT)
+PyTQG = py_tqg.pyTQG(params, Grid, TQG)
 PyTQG.loop()

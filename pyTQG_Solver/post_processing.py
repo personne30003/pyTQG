@@ -19,9 +19,9 @@ import collections
 import dealiasing
 import grid
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
+#import matplotlib as mpl
+#import matplotlib.pyplot as plt
+#import matplotlib.colors as mcolors
 
 ####### Réglages pour la fonction animate #####################
 pn.extension(backend='bokeh')
@@ -72,7 +72,7 @@ class PostProcess :
             coord_transform_x = scipy.fft.fftshift(2.0*np.pi*scipy.fft.fftfreq(self.params.Nx, d = self.Grid.dx), axes = 0)
             coord_transform_y = np.arange(0, self.params.Ny)
             name_coord_x = 'kx'
-            name_coord_y = 'i'
+            name_coord_y = 'k'
 
         elif self.__geometry == 'basin' :
             raise NotImplementedError
@@ -135,6 +135,7 @@ class PostProcess :
         else :
             raise TypeError
     def integrate(self, var, axis = 'all'):
+        "Attention : ne fonctionne pas"
         if type(var) == np.ndarray :
             return self.Grid.integrate(var, axis)
         elif type(var) == xr.DataArray :
@@ -157,6 +158,7 @@ class PostProcess :
             raise TypeError
 
     def int_cum(self, var, axis):
+        "Attention : non testé"
         if type(var) == np.ndarray:
             return self.Grid.int_cum(var, axis)
         elif type(var) == xr.DataArray :
